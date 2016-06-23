@@ -32,6 +32,7 @@ export class InfoBox {
 			this._popper._reference = referenceTag;
 			this._popper.update();
 		}
+		return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
 	}
 
 	
@@ -48,7 +49,7 @@ export class InfoBox {
 		}
 		section.appendChild( document.createTextNode(description) );
 
-		this._updatePosition( selector, popperOptions );
+		return this._updatePosition( selector, popperOptions );
 
 	}
 

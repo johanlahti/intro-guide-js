@@ -109,8 +109,8 @@ export class IntroGuide {
 		}
 		this._stepIndex = step;
 		const stepConfig = this._getStepConfig(step);
-		this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, stepConfig.popperOptions);
-		this._drawHole();
+		var position = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "absolute"); //stepConfig.popperOptions);
+		this._drawHole( position.reference );
 		this._navDelayTimeout = setTimeout(() => {
 			this._nav._tag.style.visibility = "visible";
 			// removeClass(this._nav._tag, "ig-hide");
@@ -152,13 +152,15 @@ export class IntroGuide {
 
 	}
 
-	_drawHole() {
-		var bbox = this._createBboxFromElement( document.querySelector( this._getStepConfig(this._stepIndex).selector ) )
+	_drawHole(obj) {
+		// var bbox = this._createBboxFromElement( document.querySelector( this._getStepConfig(this._stepIndex).selector ) )
+		const padding = 10;
+		var bbox = [obj.left-padding, obj.top-padding, obj.right+padding, obj.bottom+padding];
 		this._drawCanvasHole( bbox );
 	}
 
 	_createBboxFromElement(tag) {
-		var padding = 20;
+		var padding = 10;
 		var h = tag.clientHeight,
 			w = tag.clientWidth,
 			left = tag.offsetLeft,

@@ -291,8 +291,8 @@
 					}
 					this._stepIndex = step;
 					var stepConfig = this._getStepConfig(step);
-					this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, stepConfig.popperOptions);
-					this._drawHole();
+					var position = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "absolute"); //stepConfig.popperOptions);
+					this._drawHole(position.reference);
 					this._navDelayTimeout = setTimeout(function () {
 						_this3._nav._tag.style.visibility = "visible";
 						// removeClass(this._nav._tag, "ig-hide");
@@ -337,14 +337,16 @@
 				}
 			}, {
 				key: "_drawHole",
-				value: function _drawHole() {
-					var bbox = this._createBboxFromElement(document.querySelector(this._getStepConfig(this._stepIndex).selector));
+				value: function _drawHole(obj) {
+					// var bbox = this._createBboxFromElement( document.querySelector( this._getStepConfig(this._stepIndex).selector ) )
+					var padding = 10;
+					var bbox = [obj.left - padding, obj.top - padding, obj.right + padding, obj.bottom + padding];
 					this._drawCanvasHole(bbox);
 				}
 			}, {
 				key: "_createBboxFromElement",
 				value: function _createBboxFromElement(tag) {
-					var padding = 20;
+					var padding = 10;
 					var h = tag.clientHeight,
 					    w = tag.clientWidth,
 					    left = tag.offsetLeft,
@@ -470,6 +472,7 @@
 						this._popper._reference = referenceTag;
 						this._popper.update();
 					}
+					return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
 				}
 			}, {
 				key: "updateGui",
@@ -488,7 +491,7 @@
 					}
 					section.appendChild(document.createTextNode(description));
 
-					this._updatePosition(selector, popperOptions);
+					return this._updatePosition(selector, popperOptions);
 				}
 			}, {
 				key: "_initGui",
