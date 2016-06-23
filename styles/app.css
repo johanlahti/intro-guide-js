@@ -36,7 +36,7 @@
   padding: 0 0.5em 0.5em 0.5em;
   margin: 0.5em;
   min-width: 9em;
-  max-width: 12em;
+  max-width: 14em;
   opacity: 0;
 }
 .ig-infobox * {
@@ -46,10 +46,16 @@
   padding-top: 0;
   margin-top: 0;
   margin-bottom: 0;
+  font-family: Helvetica, arial, sans-serif;
+  font-size: 1.2em;
 }
 .ig-infobox section {
   font-size: 0.8em;
   word-break: normal;
+  line-height: 1.1;
+  font-family: Helvetica, arial, sans-serif;
+  font-size: 0.7em;
+  margin-top: 0.3em;
 }
 .ig-nav-container {
   margin-top: 0.5em;
@@ -97,9 +103,9 @@
   opacity: 1;
 }
 .ig-fadein canvas {
-  transition: opacity 0.5s, -webkit-filter 0.5s;
-  transition: opacity 0.5s, filter 0.5s;
-  transition: opacity 0.5s, filter 0.5s, -webkit-filter 0.5s;
+  transition: opacity 0.3s, -webkit-filter 0.3s;
+  transition: opacity 0.3s, filter 0.3s;
+  transition: opacity 0.3s, filter 0.3s, -webkit-filter 0.3s;
   opacity: 1;
 }
 .ig-fadein .ig-infobox {

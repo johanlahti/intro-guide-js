@@ -261,6 +261,7 @@
 				value: function stop() {
 					var _this2 = this;
 
+					removeClass(this._container, "ig-fadein");
 					setTimeout(function () {
 						_this2._unbindEvents();
 						_this2._nav = null;
@@ -339,14 +340,14 @@
 				key: "_drawHole",
 				value: function _drawHole(obj) {
 					// var bbox = this._createBboxFromElement( document.querySelector( this._getStepConfig(this._stepIndex).selector ) )
-					var padding = 10;
+					var padding = 5;
 					var bbox = [obj.left - padding, obj.top - padding, obj.right + padding, obj.bottom + padding];
 					this._drawCanvasHole(bbox);
 				}
 			}, {
 				key: "_createBboxFromElement",
 				value: function _createBboxFromElement(tag) {
-					var padding = 10;
+					var padding = 2;
 					var h = tag.clientHeight,
 					    w = tag.clientWidth,
 					    left = tag.offsetLeft,

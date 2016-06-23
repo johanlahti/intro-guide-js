@@ -1,3 +1,5 @@
+fontFamily = Helvetica, arial, sans-serif
+
 
 .ig-maincontainer
 	font-size 2rem
@@ -30,29 +32,30 @@
 
 .ig-infobox
 	position absolute
-	// padding 0 1em 1em 1em
 	z-index 2
 	transition left 0.5s, top 0.5s, margin 0.8s, opacity 0.5s
 	color #fff
 	padding 0 0.5em 0.5em 0.5em
 	margin 0.5em
 	min-width 9em
-	max-width 12em
-	// padding 0.5em 1em 1.5em 1em
+	max-width 14em
 	opacity 0
-	// padding 2em
-	// background-color rgba(255,255,255,0.9)
-	// border-radius 2px
 	*
 		color #fff
 	h3
 		padding-top 0
 		margin-top 0
 		margin-bottom 0
+		font-family fontFamily
+		font-size 1.2em
 	section
 		font-size 0.8em
 		// max-width 14em
 		word-break normal
+		line-height 1.1
+		font-family fontFamily
+		font-size 0.7em
+		margin-top 0.3em
 	
 
 .ig-nav-container
@@ -115,7 +118,7 @@
 		
 .ig-fadein
 	canvas
-		transition opacity 0.5s, filter 0.5s
+		transition opacity 0.3s, filter 0.3s
 		opacity 1
 		// filter alpha(opacity=100)
 	.ig-infobox

@@ -80,6 +80,7 @@ export class IntroGuide {
 	}
 
 	stop() {
+		removeClass(this._container, "ig-fadein");
 		setTimeout(() => {
 			this._unbindEvents();
 			this._nav = null;
@@ -154,13 +155,13 @@ export class IntroGuide {
 
 	_drawHole(obj) {
 		// var bbox = this._createBboxFromElement( document.querySelector( this._getStepConfig(this._stepIndex).selector ) )
-		const padding = 10;
+		const padding = 5;
 		var bbox = [obj.left-padding, obj.top-padding, obj.right+padding, obj.bottom+padding];
 		this._drawCanvasHole( bbox );
 	}
 
 	_createBboxFromElement(tag) {
-		var padding = 10;
+		var padding = 2;
 		var h = tag.clientHeight,
 			w = tag.clientWidth,
 			left = tag.offsetLeft,
