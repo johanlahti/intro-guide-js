@@ -1,0 +1,63 @@
+{
+  "name": "intro-guide-js",
+  "version": "1.0.0",
+  "description": "A library for creating a step-by-step introduction GUI, showing and describing functionality in a web application",
+  "main": "dist/js/bundle.js",
+  "directories": {
+    "test": "test"
+  },
+  "files": [
+    "dist/js/bundle.js",
+    "dist/css/bundle.css",
+    "dist/fonts/*"
+  ],
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johanlahti/intro-guide-js.git"
+  },
+  "author": "Johan Lahti <johanlahti@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/johanlahti/intro-guide-js/issues"
+  },
+  "homepage": "https://github.com/johanlahti/intro-guide-js#readme",
+  "devDependencies": {
+    "babel-core": "^6.9.0",
+    "babel-loader": "^6.2.4",
+    "babel-preset-es2015": "latest",
+    "babelify": "latest",
+    "browserify": "latest",
+    "del": "latest",
+    "event-stream": "latest",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "fs": "latest",
+    "gulp": "latest",
+    "gulp-autoprefixer": "latest",
+    "gulp-babel": "latest",
+    "gulp-clean-css": "^2.0.8",
+    "gulp-concat": "^2.6.0",
+    "gulp-filter": "^4.0.0",
+    "gulp-flatten": "latest",
+    "gulp-inject": "latest",
+    "gulp-plumber": "latest",
+    "gulp-rename": "latest",
+    "gulp-replace": "^0.5.4",
+    "gulp-shell": "^0.5.2",
+    "gulp-stylus": "latest",
+    "gulp-uglify": "latest",
+    "gulp-using": "latest",
+    "gulp-util": "latest",
+    "jshint": "latest",
+    "jshint-stylish": "latest",
+    "run-sequence": "^1.2.1",
+    "vinyl-source-stream": "latest",
+    "webpack": "^1.13.1"
+  },
+  "dependencies": {
+    "font-awesome": "^4.6.3",
+    "popper.js": "^0.4.2"
+  }
+}
