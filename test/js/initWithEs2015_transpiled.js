@@ -165,21 +165,16 @@
 		exports.IntroGuide = undefined;
 
 		var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+		// import { Tooltip } from "Tooltip"
+
 
 		var _InfoBox = __webpack_require__(2);
 
 		var _Navigation = __webpack_require__(4);
 
+		var _utils = __webpack_require__(5);
+
 		function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-		// import { Tooltip } from "Tooltip"
-
-		function addClass(el, className) {
-			el.className = el.className.split(" ").concat([className]).join(" ");
-		}
-		function removeClass(el, className) {
-			el.className = el.className.split(" ").splice(className, 1).join(" ");
-		}
 
 		var IntroGuide = exports.IntroGuide = function () {
 			function IntroGuide(container, config) {
@@ -187,13 +182,19 @@
 
 				this._container = container;
 				this._container.className = "ig-maincontainer";
-				this._config = config;
-				this._initGui();
+				this._config = this._preProcessConfig(config);
+				// this._initGui();
 				this._stepIndex = this._config.stepIndex || 0;
 				this._bindEvents();
 			}
 
 			_createClass(IntroGuide, [{
+				key: "_preProcessConfig",
+				value: function _preProcessConfig(config) {
+					var defaults = {};
+					return Object.assign(defaults, config);
+				}
+			}, {
 				key: "_bindEvents",
 				value: function _bindEvents() {
 					this._handleResizeBound = this._handleResizeBound || this._handleResize.bind(this);
@@ -227,25 +228,19 @@
 					this._drawHole();
 				}
 			}, {
-				key: "start",
-				value: function start() {
-					if (document.readyState !== "complete") {
-						document.addEventListener("DOMContentLoaded", this._start.bind(this));
-					} else {
-						this._start();
-					}
-				}
-			}, {
 				key: "_start",
 				value: function _start() {
 					var _this = this;
 
+					if (!this._isActive) {
+						this._isActive = true;
+					}
 					if (this._container.children.length === 0) {
 						this._initGui();
 					}
 					this.goToStep(this._stepIndex);
 					setTimeout(function () {
-						addClass(_this._container, "ig-fadein");
+						(0, _utils.addClass)(_this._container, "ig-fadein");
 						// var tooltip1 = new Tooltip(
 						// 	document.querySelectorAll(".ig-nav-btn")[1],
 						// 	"Klicka här för att komma vidare"
@@ -257,19 +252,34 @@
 					}, 300);
 				}
 			}, {
+				key: "start",
+				value: function start() {
+					if (document.readyState !== "complete") {
+						document.addEventListener("DOMContentLoaded", this._start.bind(this));
+					} else {
+						this._start();
+					}
+				}
+			}, {
 				key: "stop",
 				value: function stop() {
 					var _this2 = this;
 
-					removeClass(this._container, "ig-fadein");
-					setTimeout(function () {
-						_this2._unbindEvents();
-						_this2._nav = null;
-						_this2._canvas = null;
-						_this2._btnClose = null;
-						_this2._infoBox = null;
-						_this2._container.innerHTML = "";
-					}, 300);
+					if (this._isActive) {
+						(0, _utils.removeClass)(this._container, "ig-fadein");
+						setTimeout(function () {
+							_this2._unbindEvents();
+							_this2._nav = null;
+							_this2._canvas = null;
+							_this2._btnClose = null;
+							_this2._infoBox = null;
+							_this2._container.innerHTML = "";
+						}, 300);
+						if (this._config.onStop) {
+							this._config.onStop();
+						}
+					}
+					this._isActive = false;
 				}
 			}, {
 				key: "restart",
@@ -283,21 +293,44 @@
 						clearTimeout(this._navDelayTimeout);
 					}
 
-					removeClass(this._nav._tag, "ig-fadein-nav");
+					(0, _utils.removeClass)(this._nav._tag, "ig-fadein-nav");
 					this._nav._tag.style.visibility = "hidden";
-					if (step < 0) {
-						step = this._config.steps.length - 1;
-					} else if (step > this._config.steps.length - 1) {
-						step = 0;
-					}
+					var navBtnLeft = this._nav._tag.querySelectorAll(".ig-nav-btn")[0],
+					    navBtnRight = this._nav._tag.querySelectorAll(".ig-nav-btn")[1];
+
 					this._stepIndex = step;
 					var stepConfig = this._getStepConfig(step);
+
+					switch (step) {
+						case 0:
+							if (!this._getStepConfig(step).btnLeftLabel) {
+								navBtnLeft.style.display = "none";
+							}
+							break;
+						case this._config.steps.length - 1:
+
+							break;
+						default:
+							navBtnLeft.style.display = navBtnRight.style.display;
+							if (step < 0) {
+								return this.stop();
+								// TODO: option "go to end"
+								// step = this._config.steps.length - 1;
+							} else if (step > this._config.steps.length - 1) {
+									return this.stop();
+									// TODO: option "go to end"
+									// step = 0;
+								}
+					}
+
+					this._nav.updateGui(step, stepConfig);
+
 					var position = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "absolute"); //stepConfig.popperOptions);
-					this._drawHole(position.reference);
+					this._drawHole(position && position.reference ? position.reference : null);
 					this._navDelayTimeout = setTimeout(function () {
 						_this3._nav._tag.style.visibility = "visible";
 						// removeClass(this._nav._tag, "ig-hide");
-						addClass(_this3._nav._tag, "ig-fadein-nav");
+						(0, _utils.addClass)(_this3._nav._tag, "ig-fadein-nav");
 					}, 500);
 				}
 			}, {
@@ -323,7 +356,7 @@
 					}, function (e) {
 						_this4.goToStep(_this4._stepIndex + 1);
 						_this4._infoBox._tag.focus();
-					});
+					}, this._config.steps.length);
 
 					this._btnClose = document.createElement("div");
 					this._btnClose.className = "ig-btnclose";
@@ -338,10 +371,15 @@
 				}
 			}, {
 				key: "_drawHole",
-				value: function _drawHole(obj) {
+				value: function _drawHole() {
+					var obj = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
 					// var bbox = this._createBboxFromElement( document.querySelector( this._getStepConfig(this._stepIndex).selector ) )
-					var padding = 5;
-					var bbox = [obj.left - padding, obj.top - padding, obj.right + padding, obj.bottom + padding];
+					var bbox;
+					if (obj) {
+						var padding = 5;
+						bbox = [obj.left - padding, obj.top - padding, obj.right + padding, obj.bottom + padding];
+					}
 					this._drawCanvasHole(bbox);
 				}
 			}, {
@@ -356,7 +394,9 @@
 				}
 			}, {
 				key: "_drawCanvasHole",
-				value: function _drawCanvasHole(bbox) {
+				value: function _drawCanvasHole() {
+					var bbox = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
 
 					var c = this._canvas;
 					var ctx = c.getContext("2d");
@@ -453,31 +493,41 @@
 
 			_createClass(InfoBox, [{
 				key: "_updatePosition",
-				value: function _updatePosition(selector) {
+				value: function _updatePosition() {
+					var selector = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 					var popperOptions = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
 
-					var referenceTag = document.querySelector(selector);
-					var options = Object.assign({
-						gpuAcceleration: false
-						// offset: 60,
-						// placement: "right"
-						// flipBehavior: ["right", "top"],
-						// boundariesPadding: 100,
-						// boundariesElement: document.querySelector("body"),
-					}, popperOptions);
-					if (!this._popper) {
-						this._popper = new _popper2.default(referenceTag, this._tag, options);
-					} else {
-						Object.assign(this._popper._options, options);
-						this._popper._reference = referenceTag;
-						this._popper.update();
+					if (selector) {
+						var referenceTag = document.querySelector(selector);
+						var options = Object.assign({
+							gpuAcceleration: false
+							// offset: 60,
+							// placement: "right"
+							// flipBehavior: ["right", "top"],
+							// boundariesPadding: 100,
+							// boundariesElement: document.querySelector("body"),
+						}, popperOptions);
+						if (!this._popper) {
+							this._popper = new _popper2.default(referenceTag, this._tag, options);
+						} else {
+							Object.assign(this._popper._options, options);
+							this._popper._reference = referenceTag;
+							this._popper.update();
+						}
+						return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
 					}
-					return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
+					this._tag.style.left = window.innerWidth / 2 - this._tag.clientWidth / 2 + "px";
+					this._tag.style.top = window.innerHeight / 2 - this._tag.clientHeight / 2 + "px";
+
+					return null;
 				}
 			}, {
 				key: "updateGui",
-				value: function updateGui(selector, title, description) {
+				value: function updateGui() {
+					var selector = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+					var title = arguments[1];
+					var description = arguments[2];
 					var popperOptions = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
 
 					var header = this._tag.querySelector(".ig-infobox-header");
@@ -1756,25 +1806,29 @@
 
 	/***/ },
 	/* 4 */
-	/***/ function(module, exports) {
+	/***/ function(module, exports, __webpack_require__) {
 
 		"use strict";
 
 		Object.defineProperty(exports, "__esModule", {
 			value: true
 		});
+		exports.Navigation = undefined;
 
 		var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+		var _utils = __webpack_require__(5);
 
 		function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 		var Navigation = exports.Navigation = function () {
-			function Navigation(container, clickPrev, clickNext) {
+			function Navigation(container, clickPrev, clickNext, nbrOfSteps) {
 				_classCallCheck(this, Navigation);
 
 				this._container = container;
 				this.clickPrev = clickPrev;
 				this.clickNext = clickNext;
+				this._nbrOfSteps = nbrOfSteps;
 				this._draw();
 			}
 
@@ -1789,17 +1843,96 @@
 					var btnPrev = nav.querySelectorAll(".ig-nav-btn")[0];
 					btnPrev.onclick = this.clickPrev;
 					btnPrev.ontouchstart = this.clickPrev;
+					this._btnPrev = btnPrev;
 
 					var btnNext = nav.querySelectorAll(".ig-nav-btn")[1];
 					btnNext.onclick = this.clickNext;
 					btnNext.ontouchstart = this.clickNext;
+					this._btnNext = btnNext;
 					this._container.appendChild(nav);
 					this._tag = nav;
+				}
+			}, {
+				key: "updateGui",
+				value: function updateGui(step) {
+					var config = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+					var btnNext = this._btnNext,
+					    btnPrev = this._btnPrev;
+
+					var orgDisplay = "inline-block";
+					switch (step) {
+						case 0:
+							// Hide btnPrev on first step, unless...
+							if (!config.btnLeftLabel) {
+								btnPrev.style.display = "none";
+							}
+							break;
+						case this._nbrOfSteps - 1:
+							// Hide btnNext on last step, unless...
+							if (!config.btnRightLabel) {
+								btnNext.style.display = "none";
+							}
+							break;
+						default:
+							btnPrev.style.display = orgDisplay;
+							btnNext.style.display = orgDisplay;
+					}
+
+					if (btnNext.childNodes.length > 1) {
+						// Remove the text node if any
+						btnNext.removeChild(btnNext.firstChild);
+					}
+					if (btnPrev.childNodes.length > 1) {
+						// Remove the text node if any
+						btnPrev.removeChild(btnPrev.lastChild);
+					}
+
+					if (config.btnLeftLabel) {
+						var textNode = document.createTextNode(" " + config.btnLeftLabel);
+						btnPrev.appendChild(textNode);
+					}
+					if (config.btnRightLabel) {
+						var _textNode = document.createTextNode(config.btnRightLabel + " ");
+						btnNext.insertBefore(_textNode, btnNext.firstChild);
+					}
+					// if (config.btnLeftIcon) {
+					var iconPrev = btnPrev.querySelector("i");
+					iconPrev.className = "";
+					if (config.btnLeftIcon !== false) {
+						(0, _utils.addClass)(iconPrev, typeof config.btnLeftIcon === "string" ? config.btnLeftIcon : "fa fa-arrow-left");
+					}
+					// }
+					// if (config.btnRightIcon) {
+					var iconNext = btnNext.querySelector("i");
+					iconNext.className = "";
+					if (config.btnRightIcon !== false) {
+						(0, _utils.addClass)(iconNext, typeof config.btnRightIcon === "string" ? config.btnRightIcon : "fa fa-arrow-right");
+					}
+					// }
 				}
 			}]);
 
 			return Navigation;
 		}();
+
+	/***/ },
+	/* 5 */
+	/***/ function(module, exports) {
+
+		"use strict";
+
+		Object.defineProperty(exports, "__esModule", {
+			value: true
+		});
+		exports.addClass = addClass;
+		exports.removeClass = removeClass;
+		function addClass(el, className) {
+			el.className = el.className.split(" ").concat([className]).join(" ");
+		}
+		function removeClass(el, className) {
+			el.className = el.className.split(" ").splice(className, 1).join(" ");
+		}
 
 	/***/ }
 	/******/ ])

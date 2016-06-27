@@ -9,34 +9,41 @@ export class InfoBox {
 		this._initGui();
 	}
 
-	_updatePosition(selector, popperOptions={}) {
+	_updatePosition(selector=null, popperOptions={}) {
 
-		let referenceTag = document.querySelector( selector );
-		var options = Object.assign({
-				gpuAcceleration: false
-				// offset: 60,
-				// placement: "right"
-				// flipBehavior: ["right", "top"],
-				// boundariesPadding: 100,
-				// boundariesElement: document.querySelector("body"),
-		}, popperOptions);
-		if (!this._popper) {
-			this._popper = new Popper(
-				referenceTag,
-				this._tag,
-				options
-			);
+		if (selector) {
+			let referenceTag = document.querySelector( selector );
+			var options = Object.assign({
+					gpuAcceleration: false
+					// offset: 60,
+					// placement: "right"
+					// flipBehavior: ["right", "top"],
+					// boundariesPadding: 100,
+					// boundariesElement: document.querySelector("body"),
+			}, popperOptions);
+			if (!this._popper) {
+				this._popper = new Popper(
+					referenceTag,
+					this._tag,
+					options
+				);
+			}
+			else {
+				Object.assign(this._popper._options, options);
+				this._popper._reference = referenceTag;
+				this._popper.update();
+			}
+			return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
 		}
-		else {
-			Object.assign(this._popper._options, options);
-			this._popper._reference = referenceTag;
-			this._popper.update();
-		}
-		return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
+		this._tag.style.left = (window.innerWidth / 2 - this._tag.clientWidth / 2) + "px";
+		this._tag.style.top = (window.innerHeight / 2 - this._tag.clientHeight / 2) + "px";
+
+		return null;
+
 	}
 
 	
-	updateGui(selector, title, description, popperOptions={}) {
+	updateGui(selector=null, title, description, popperOptions={}) {
 		var header = this._tag.querySelector(".ig-infobox-header");
 		if (header.childNodes.length) {
 			header.removeChild( header.childNodes[0] );

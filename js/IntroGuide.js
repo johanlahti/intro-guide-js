@@ -1,24 +1,23 @@
 import { InfoBox } from "./InfoBox"
 import { Navigation } from "./Navigation"
 // import { Tooltip } from "Tooltip"
+import { addClass, removeClass } from "./utils"
 
 
-function addClass(el, className) {
-	el.className = el.className.split(" ").concat([className]).join(" ");
-}
-function removeClass(el, className) {
-	el.className = el.className.split(" ").splice(className, 1).join(" ");
-}
 
 export class IntroGuide {
 	constructor(container, config) {
 		this._container = container;
 		this._container.className = "ig-maincontainer";
-		this._config = config;
-		this._initGui();
+		this._config = this._preProcessConfig(config);
+		// this._initGui();
 		this._stepIndex = this._config.stepIndex || 0;
 		this._bindEvents();
+	}
 
+	_preProcessConfig(config) {
+		var defaults = {};
+		return Object.assign(defaults, config);
 	}
 
 	_bindEvents() {
@@ -49,16 +48,10 @@ export class IntroGuide {
 		this._drawHole();
 	}
 
-	start() {
-		if (document.readyState !== "complete") {
-			document.addEventListener("DOMContentLoaded", this._start.bind(this));
-		}
-		else {
-			this._start();
-		}
-	}
-
 	_start() {
+		if (!this._isActive) {
+			this._isActive = true;
+		}
 		if (this._container.children.length === 0) {
 			this._initGui();
 		}
@@ -79,16 +72,31 @@ export class IntroGuide {
 
 	}
 
+	start() {
+		if (document.readyState !== "complete") {
+			document.addEventListener("DOMContentLoaded", this._start.bind(this));
+		}
+		else {
+			this._start();
+		}
+	}
+
 	stop() {
-		removeClass(this._container, "ig-fadein");
-		setTimeout(() => {
-			this._unbindEvents();
-			this._nav = null;
-			this._canvas = null;
-			this._btnClose = null;
-			this._infoBox = null;
-			this._container.innerHTML = "";
-		}, 300);
+		if (this._isActive) {
+			removeClass(this._container, "ig-fadein");
+			setTimeout(() => {
+				this._unbindEvents();
+				this._nav = null;
+				this._canvas = null;
+				this._btnClose = null;
+				this._infoBox = null;
+				this._container.innerHTML = "";
+			}, 300);
+			if (this._config.onStop) {
+				this._config.onStop();
+			}
+		}
+		this._isActive = false;
 	}
 
 	restart() {
@@ -102,16 +110,39 @@ export class IntroGuide {
 
 		removeClass(this._nav._tag, "ig-fadein-nav");
 		this._nav._tag.style.visibility = "hidden";
-		if (step < 0) {
-			step = this._config.steps.length - 1;
-		}
-		else if (step > this._config.steps.length - 1) {
-			step = 0;
-		}
+		var navBtnLeft = this._nav._tag.querySelectorAll(".ig-nav-btn")[0],
+			navBtnRight = this._nav._tag.querySelectorAll(".ig-nav-btn")[1];
+
 		this._stepIndex = step;
 		const stepConfig = this._getStepConfig(step);
+
+		switch (step) {
+			case 0:
+				if ( !this._getStepConfig(step).btnLeftLabel ) {
+					navBtnLeft.style.display = "none";
+				}
+				break;
+			case this._config.steps.length - 1:
+
+				break;
+			default:
+				navBtnLeft.style.display = navBtnRight.style.display;
+				if (step < 0) {
+					return this.stop();
+					// TODO: option "go to end"
+					// step = this._config.steps.length - 1;
+				}
+				else if (step > this._config.steps.length - 1) {
+					return this.stop();
+					// TODO: option "go to end"
+					// step = 0;
+				}
+		}
+		
+		this._nav.updateGui(step, stepConfig);
+
 		var position = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "absolute"); //stepConfig.popperOptions);
-		this._drawHole( position.reference );
+		this._drawHole( position && position.reference ? position.reference : null  );
 		this._navDelayTimeout = setTimeout(() => {
 			this._nav._tag.style.visibility = "visible";
 			// removeClass(this._nav._tag, "ig-hide");
@@ -140,7 +171,8 @@ export class IntroGuide {
 			(e) => {
 				this.goToStep( this._stepIndex + 1 );
 				this._infoBox._tag.focus();
-			}
+			},
+			this._config.steps.length
 		)
 
 		this._btnClose = document.createElement("div");
@@ -153,10 +185,13 @@ export class IntroGuide {
 
 	}
 
-	_drawHole(obj) {
+	_drawHole(obj=null) {
 		// var bbox = this._createBboxFromElement( document.querySelector( this._getStepConfig(this._stepIndex).selector ) )
-		const padding = 5;
-		var bbox = [obj.left-padding, obj.top-padding, obj.right+padding, obj.bottom+padding];
+		var bbox;
+		if (obj) {
+			const padding = 5;
+			bbox = [obj.left-padding, obj.top-padding, obj.right+padding, obj.bottom+padding];
+		}
 		this._drawCanvasHole( bbox );
 	}
 
@@ -174,7 +209,7 @@ export class IntroGuide {
 		];
 	}
 
-	_drawCanvasHole(bbox) {
+	_drawCanvasHole(bbox=null) {
 
 		var c = this._canvas;
 		var ctx = c.getContext("2d");
