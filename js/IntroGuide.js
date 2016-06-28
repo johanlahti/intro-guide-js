@@ -183,6 +183,9 @@ export class IntroGuide {
 
 				var positionObj = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, this._infoBox._tag.style.position); //stepConfig.popperOptions);
 				var position = positionObj && positionObj.reference ? positionObj.reference : null;
+				// if (utils.getBrowser().ie) {
+				// 	position.top += 100; // Test
+				// }
 				this._drawHole( position  );
 				this._navDelayTimeout = setTimeout(() => {
 					this._nav._tag.style.visibility = "visible";
@@ -319,7 +322,7 @@ export class IntroGuide {
 		c.height = winHeight;
 
 		// ctx.fillRect(0,0,winWidth,winHeight);
-
+		ctx.beginPath(); // needed for IE and Edge
 		ctx.moveTo(0, 0);
 		ctx.lineTo(winWidth, 0);
 		ctx.lineTo(winWidth, winHeight);

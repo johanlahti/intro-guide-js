@@ -377,6 +377,9 @@
 
 							var positionObj = _this4._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, _this4._infoBox._tag.style.position); //stepConfig.popperOptions);
 							var position = positionObj && positionObj.reference ? positionObj.reference : null;
+							if (utils.getBrowser().ie) {
+								position.top += 100; // Test
+							}
 							_this4._drawHole(position);
 							_this4._navDelayTimeout = setTimeout(function () {
 								_this4._nav._tag.style.visibility = "visible";
@@ -2014,6 +2017,7 @@
 		exports.addClass = addClass;
 		exports.removeClass = removeClass;
 		exports.tagIsVisible = tagIsVisible;
+		exports.getBrowser = getBrowser;
 		function addClass(el, className) {
 			el.className = el.className.split(" ").concat([className]).join(" ");
 		}
@@ -2023,6 +2027,20 @@
 
 		function tagIsVisible(el) {
 			return !!el && el.offsetParent !== null && el.style.display !== "none" && el.style.visibility !== "hidden";
+		}
+
+		function getBrowser() {
+			var match = navigator.userAgent.match(/(?:MSIE |Trident\/.*; rv:)(\d+)/);
+			var ieVersion = match ? parseInt(match[1]) : undefined;
+
+			return {
+				ie: match,
+				ieVersion: ieVersion,
+				ie8: ieVersion === 8,
+				ie9: ieVersion === 9,
+				ie10: ieVersion === 10,
+				ie11: ieVersion === 11
+			};
 		}
 
 	/***/ }
