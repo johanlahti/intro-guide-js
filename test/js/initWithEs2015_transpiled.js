@@ -364,7 +364,7 @@
 								}
 					}
 
-					function callback() {
+					function beforeShowCallback() {
 						var _this4 = this;
 
 						var ms = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
@@ -390,11 +390,29 @@
 							afterTimeout();
 						}
 					}
+					// const goingForward = !this._prevStepIndex || this._prevStepIndex < this._stepIndex;
 
-					if (stepConfig.beforeShow) {
-						return stepConfig.beforeShow(callback.bind(this), utils);
+					function hideCallback() {
+						var ms = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
+						if (stepConfig.beforeShow) {
+							// && goingForward) {
+							stepConfig.beforeShow(beforeShowCallback.bind(this), utils);
+						} else {
+							beforeShowCallback.call(this);
+						}
 					}
-					return callback.call(this);
+
+					if (this._prevStepIndex) {
+						var prevStepConfig = this._getStepConfig(this._prevStepIndex);
+						if (prevStepConfig && prevStepConfig.hide) {
+							prevStepConfig.hide(hideCallback.bind(this), utils);
+						} else {
+							hideCallback.call(this);
+						}
+					} else {
+						hideCallback.call(this);
+					}
 				}
 			}, {
 				key: "_getStepConfig",

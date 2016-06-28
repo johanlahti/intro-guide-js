@@ -174,7 +174,7 @@ export class IntroGuide {
 		}
 
 		
-		function callback(ms=null) {
+		function beforeShowCallback(ms=null) {
 			const afterTimeout = () => {
 				if (this._checkStepConfig(stepConfig) === false) {
 					return;
@@ -197,11 +197,29 @@ export class IntroGuide {
 				afterTimeout();
 			}
 		}
+		// const goingForward = !this._prevStepIndex || this._prevStepIndex < this._stepIndex;
 
-		if (stepConfig.beforeShow) {
-			return stepConfig.beforeShow(callback.bind(this), utils);
+		function hideCallback(ms=null) {
+			if (stepConfig.beforeShow) {  // && goingForward) {
+				stepConfig.beforeShow(beforeShowCallback.bind(this), utils);
+			}
+			else {
+				beforeShowCallback.call(this);
+			}
 		}
-		return callback.call(this);
+
+		if (this._prevStepIndex) {
+			const prevStepConfig = this._getStepConfig(this._prevStepIndex);
+			if (prevStepConfig && prevStepConfig.hide) {
+				prevStepConfig.hide(hideCallback.bind(this), utils);
+			}
+			else {
+				hideCallback.call(this);
+			}
+		}
+		else {
+			hideCallback.call(this);
+		}
 	}
 
 	_getStepConfig(stepIndex) {
