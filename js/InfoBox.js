@@ -10,7 +10,6 @@ export class InfoBox {
 	}
 
 	_updatePosition(selector=null, popperOptions={}) {
-
 		if (selector) {
 			let referenceTag = document.querySelector( selector );
 			var options = Object.assign({
@@ -35,9 +34,15 @@ export class InfoBox {
 			}
 			return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
 		}
-		this._tag.style.left = (window.innerWidth / 2 - this._tag.clientWidth / 2) + "px";
-		this._tag.style.top = (window.innerHeight / 2 - this._tag.clientHeight / 2) + "px";
 
+		const centerTag = document.querySelector("#maindiv");
+		const clientHeight = this._tag.clientHeight || 0,
+			clientWidth = this._tag.clientWidth || 0,
+			innerWidth = window.innerWidth || document.documentElement.clientWidth || 0,
+			innerHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+		// console.log(`${clientHeight} ${clientWidth} ${innerWidth} ${innerHeight}`);
+		this._tag.style.left = (innerWidth / 2 - clientWidth / 2) + "px";
+		this._tag.style.top = (innerHeight / 2 - clientHeight / 2) + "px";
 		return null;
 
 	}

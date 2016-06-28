@@ -12,18 +12,18 @@ fontFamily = Helvetica, arial, sans-serif
 	top 0
 	width 100%
 	height 100%
-	transition opacity 1s, filter 1s
+	transition opacity 0.3s, filter 0.3s
 	opacity 0
 	// filter alpha(opacity=0)
 
 .ig-btnclose
 	position fixed
 	display block
-	right 0.4em
-	top 0
+	right 0.1em
+	top -0.2em
 	color #ccc
 	z-index 1
-	font-size 2em
+	font-size 1.6em
 	cursor pointer
 	transition color 0.3s
 
@@ -31,7 +31,7 @@ fontFamily = Helvetica, arial, sans-serif
 	color #fff
 
 .ig-infobox
-	position absolute
+	position fixed
 	z-index 2
 	transition left 0.5s, top 0.5s, margin 0.8s, opacity 0.5s
 	color #fff
@@ -90,19 +90,21 @@ fontFamily = Helvetica, arial, sans-serif
 	// font-weight bold
 	// touch-action manipulation
 	user-select none
-	padding 0.3em 0.7em
+	padding 0.2em 0.7em
 	transition background-color 0.3s //, border 0.3s
 	border 1px solid transparent
 
 
+btnBorderColor = #fff
+
 .ig-nav-btn:nth-child(2)
-	border-left-color #fff
+	border-left-color btnBorderColor
 	margin-left -1px
 	// border-radius 0 4px 4px 0
 	
 .ig-nav-btn:hover
-	border-color #fff
-	background-color rgba(200,200,200,0.3)
+	border-color btnBorderColor
+	// background-color rgba(200,200,200,0.3)
 	box-shadow -1px -1px 12px rgba(200,200,200,0.5)
 	// border 1px solid rgba(255,255,255,0)
 	

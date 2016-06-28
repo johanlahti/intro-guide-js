@@ -1,7 +1,7 @@
 import { InfoBox } from "./InfoBox"
 import { Navigation } from "./Navigation"
 // import { Tooltip } from "Tooltip"
-import { addClass, removeClass } from "./utils"
+import * as utils from "./utils"
 
 
 
@@ -33,6 +33,10 @@ export class IntroGuide {
 
 	_onKeyDown(e) {
 		switch (e.keyCode) {
+			case 27:
+				// Esc
+				this.stop();
+				break;
 			case 37:
 				// Go left
 				this.goToStep(this._stepIndex - 1);
@@ -45,7 +49,13 @@ export class IntroGuide {
 	}
 
 	_handleResize() {
-		this._drawHole();
+		this.goToStep(this._stepIndex);
+		// const c = this._getStepConfig(this._stepIndex);
+		// if (this._checkStepConfig( c ) === false) {
+		// 	return;
+		// }
+		// var position = this._infoBox._updatePosition(c.selector, c);
+		// this._drawHole(position && position.reference ? position.reference : null);
 	}
 
 	_start() {
@@ -56,25 +66,26 @@ export class IntroGuide {
 			this._initGui();
 		}
 		this.goToStep(this._stepIndex);
-		setTimeout(() => {
-			addClass(this._container, "ig-fadein");
-			// var tooltip1 = new Tooltip(
-			// 	document.querySelectorAll(".ig-nav-btn")[1],
-			// 	"Klicka här för att komma vidare"
-			// );
-			// var tooltip2 = new Tooltip(
-			// 		document.querySelectorAll(".ig-btnclose")[1],
-			// 		"Klicka här för att avsluta introduktionen"
-			// 	);
-
-		}, 300);
-
-
+		utils.addClass(this._container, "ig-fadein");
+		// setTimeout(() => {
+		// 	// this._handleResize();
+		// }, 300);
 	}
 
 	start() {
 		if (document.readyState !== "complete") {
-			document.addEventListener("DOMContentLoaded", this._start.bind(this));
+			if (!document.addEventListener) {
+				//  IE <= 8
+				document.attachEvent("onreadystatechange", () => {
+					if ( document.readyState === "complete" ) {
+						this._start();
+					}
+				});
+			}
+			else {
+				// Not too un-modern browsers
+				document.addEventListener("DOMContentLoaded", this._start.bind(this));
+			}
 		}
 		else {
 			this._start();
@@ -83,7 +94,7 @@ export class IntroGuide {
 
 	stop() {
 		if (this._isActive) {
-			removeClass(this._container, "ig-fadein");
+			utils.removeClass(this._container, "ig-fadein");
 			setTimeout(() => {
 				this._unbindEvents();
 				this._nav = null;
@@ -103,16 +114,39 @@ export class IntroGuide {
 
 	}
 
+	_checkStepConfig(stepConfig) {
+		const proceed = () => {
+			let incrementor = (this._prevStepIndex === null || this._prevStepIndex < this._stepIndex) ? 1 : -1;
+			this.goToStep(this._stepIndex + incrementor);
+		}
+		if (stepConfig.selector) {
+			let tag = document.querySelector(stepConfig.selector);
+			if (utils.tagIsVisible(tag) === false) {
+				proceed();
+				return false;
+			}
+		}
+		var ok = stepConfig.condition ? stepConfig.condition() : true;
+		if (ok === false) {
+			proceed();
+		}
+		return ok;
+	}
+
 	goToStep(step) {
 		if (this._navDelayTimeout) {
 			clearTimeout(this._navDelayTimeout);
 		}
+		if (this._beforeShowTimeout) {
+			clearTimeout(this._beforeShowTimeout);
+		}
 
-		removeClass(this._nav._tag, "ig-fadein-nav");
+		utils.removeClass(this._nav._tag, "ig-fadein-nav");
 		this._nav._tag.style.visibility = "hidden";
 		var navBtnLeft = this._nav._tag.querySelectorAll(".ig-nav-btn")[0],
 			navBtnRight = this._nav._tag.querySelectorAll(".ig-nav-btn")[1];
 
+		this._prevStepIndex = this._stepIndex || null;
 		this._stepIndex = step;
 		const stepConfig = this._getStepConfig(step);
 
@@ -138,16 +172,36 @@ export class IntroGuide {
 					// step = 0;
 				}
 		}
-		
-		this._nav.updateGui(step, stepConfig);
 
-		var position = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "absolute"); //stepConfig.popperOptions);
-		this._drawHole( position && position.reference ? position.reference : null  );
-		this._navDelayTimeout = setTimeout(() => {
-			this._nav._tag.style.visibility = "visible";
-			// removeClass(this._nav._tag, "ig-hide");
-			addClass(this._nav._tag, "ig-fadein-nav");
-		}, 500);
+		
+		function callback(ms=null) {
+			const afterTimeout = () => {
+				if (this._checkStepConfig(stepConfig) === false) {
+					return;
+				}
+				this._nav.updateGui(step, stepConfig);
+
+				var positionObj = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, this._infoBox._tag.style.position); //stepConfig.popperOptions);
+				var position = positionObj && positionObj.reference ? positionObj.reference : null;
+				this._drawHole( position  );
+				this._navDelayTimeout = setTimeout(() => {
+					this._nav._tag.style.visibility = "visible";
+					// utils.removeClass(this._nav._tag, "ig-hide");
+					utils.addClass(this._nav._tag, "ig-fadein-nav");
+				}, 500);
+			}
+			if (ms) {
+				this._beforeShowTimeout = setTimeout(afterTimeout, ms);
+			}
+			else {
+				afterTimeout();
+			}
+		}
+
+		if (stepConfig.beforeShow) {
+			return stepConfig.beforeShow(callback.bind(this), utils);
+		}
+		return callback.call(this);
 	}
 
 	_getStepConfig(stepIndex) {

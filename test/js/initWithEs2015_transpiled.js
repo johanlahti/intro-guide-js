@@ -174,6 +174,10 @@
 
 		var _utils = __webpack_require__(5);
 
+		var utils = _interopRequireWildcard(_utils);
+
+		function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 		function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 		var IntroGuide = exports.IntroGuide = function () {
@@ -212,6 +216,10 @@
 				key: "_onKeyDown",
 				value: function _onKeyDown(e) {
 					switch (e.keyCode) {
+						case 27:
+							// Esc
+							this.stop();
+							break;
 						case 37:
 							// Go left
 							this.goToStep(this._stepIndex - 1);
@@ -225,13 +233,17 @@
 			}, {
 				key: "_handleResize",
 				value: function _handleResize() {
-					this._drawHole();
+					this.goToStep(this._stepIndex);
+					// const c = this._getStepConfig(this._stepIndex);
+					// if (this._checkStepConfig( c ) === false) {
+					// 	return;
+					// }
+					// var position = this._infoBox._updatePosition(c.selector, c);
+					// this._drawHole(position && position.reference ? position.reference : null);
 				}
 			}, {
 				key: "_start",
 				value: function _start() {
-					var _this = this;
-
 					if (!this._isActive) {
 						this._isActive = true;
 					}
@@ -239,23 +251,28 @@
 						this._initGui();
 					}
 					this.goToStep(this._stepIndex);
-					setTimeout(function () {
-						(0, _utils.addClass)(_this._container, "ig-fadein");
-						// var tooltip1 = new Tooltip(
-						// 	document.querySelectorAll(".ig-nav-btn")[1],
-						// 	"Klicka här för att komma vidare"
-						// );
-						// var tooltip2 = new Tooltip(
-						// 		document.querySelectorAll(".ig-btnclose")[1],
-						// 		"Klicka här för att avsluta introduktionen"
-						// 	);
-					}, 300);
+					utils.addClass(this._container, "ig-fadein");
+					// setTimeout(() => {
+					// 	// this._handleResize();
+					// }, 300);
 				}
 			}, {
 				key: "start",
 				value: function start() {
+					var _this = this;
+
 					if (document.readyState !== "complete") {
-						document.addEventListener("DOMContentLoaded", this._start.bind(this));
+						if (!document.addEventListener) {
+							//  IE <= 8
+							document.attachEvent("onreadystatechange", function () {
+								if (document.readyState === "complete") {
+									_this._start();
+								}
+							});
+						} else {
+							// Not too un-modern browsers
+							document.addEventListener("DOMContentLoaded", this._start.bind(this));
+						}
 					} else {
 						this._start();
 					}
@@ -266,7 +283,7 @@
 					var _this2 = this;
 
 					if (this._isActive) {
-						(0, _utils.removeClass)(this._container, "ig-fadein");
+						utils.removeClass(this._container, "ig-fadein");
 						setTimeout(function () {
 							_this2._unbindEvents();
 							_this2._nav = null;
@@ -285,19 +302,43 @@
 				key: "restart",
 				value: function restart() {}
 			}, {
-				key: "goToStep",
-				value: function goToStep(step) {
+				key: "_checkStepConfig",
+				value: function _checkStepConfig(stepConfig) {
 					var _this3 = this;
 
+					var proceed = function proceed() {
+						var incrementor = _this3._prevStepIndex === null || _this3._prevStepIndex < _this3._stepIndex ? 1 : -1;
+						_this3.goToStep(_this3._stepIndex + incrementor);
+					};
+					if (stepConfig.selector) {
+						var tag = document.querySelector(stepConfig.selector);
+						if (utils.tagIsVisible(tag) === false) {
+							proceed();
+							return false;
+						}
+					}
+					var ok = stepConfig.condition ? stepConfig.condition() : true;
+					if (ok === false) {
+						proceed();
+					}
+					return ok;
+				}
+			}, {
+				key: "goToStep",
+				value: function goToStep(step) {
 					if (this._navDelayTimeout) {
 						clearTimeout(this._navDelayTimeout);
 					}
+					if (this._beforeShowTimeout) {
+						clearTimeout(this._beforeShowTimeout);
+					}
 
-					(0, _utils.removeClass)(this._nav._tag, "ig-fadein-nav");
+					utils.removeClass(this._nav._tag, "ig-fadein-nav");
 					this._nav._tag.style.visibility = "hidden";
 					var navBtnLeft = this._nav._tag.querySelectorAll(".ig-nav-btn")[0],
 					    navBtnRight = this._nav._tag.querySelectorAll(".ig-nav-btn")[1];
 
+					this._prevStepIndex = this._stepIndex || null;
 					this._stepIndex = step;
 					var stepConfig = this._getStepConfig(step);
 
@@ -323,15 +364,37 @@
 								}
 					}
 
-					this._nav.updateGui(step, stepConfig);
+					function callback() {
+						var _this4 = this;
 
-					var position = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "absolute"); //stepConfig.popperOptions);
-					this._drawHole(position && position.reference ? position.reference : null);
-					this._navDelayTimeout = setTimeout(function () {
-						_this3._nav._tag.style.visibility = "visible";
-						// removeClass(this._nav._tag, "ig-hide");
-						(0, _utils.addClass)(_this3._nav._tag, "ig-fadein-nav");
-					}, 500);
+						var ms = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+
+						var afterTimeout = function afterTimeout() {
+							if (_this4._checkStepConfig(stepConfig) === false) {
+								return;
+							}
+							_this4._nav.updateGui(step, stepConfig);
+
+							var positionObj = _this4._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, _this4._infoBox._tag.style.position); //stepConfig.popperOptions);
+							var position = positionObj && positionObj.reference ? positionObj.reference : null;
+							_this4._drawHole(position);
+							_this4._navDelayTimeout = setTimeout(function () {
+								_this4._nav._tag.style.visibility = "visible";
+								// utils.removeClass(this._nav._tag, "ig-hide");
+								utils.addClass(_this4._nav._tag, "ig-fadein-nav");
+							}, 500);
+						};
+						if (ms) {
+							this._beforeShowTimeout = setTimeout(afterTimeout, ms);
+						} else {
+							afterTimeout();
+						}
+					}
+
+					if (stepConfig.beforeShow) {
+						return stepConfig.beforeShow(callback.bind(this), utils);
+					}
+					return callback.call(this);
 				}
 			}, {
 				key: "_getStepConfig",
@@ -341,7 +404,7 @@
 			}, {
 				key: "_initGui",
 				value: function _initGui() {
-					var _this4 = this;
+					var _this5 = this;
 
 					var c = document.createElement("canvas");
 					c.id = "ig-canvas-with-hole";
@@ -351,21 +414,21 @@
 					this._container.appendChild(this._canvas);
 					this._container.style.zIndex = this._container.style.zIndex || "2000";
 					this._nav = new _Navigation.Navigation(this._infoBox._tag, function (e) {
-						_this4.goToStep(_this4._stepIndex - 1);
-						_this4._infoBox._tag.focus();
+						_this5.goToStep(_this5._stepIndex - 1);
+						_this5._infoBox._tag.focus();
 					}, function (e) {
-						_this4.goToStep(_this4._stepIndex + 1);
-						_this4._infoBox._tag.focus();
+						_this5.goToStep(_this5._stepIndex + 1);
+						_this5._infoBox._tag.focus();
 					}, this._config.steps.length);
 
 					this._btnClose = document.createElement("div");
 					this._btnClose.className = "ig-btnclose";
 					this._btnClose.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i>';
 					this._btnClose.onclick = function (e) {
-						return _this4.stop();
+						return _this5.stop();
 					};
 					this._btnClose.ontouchstart = function (e) {
-						return _this4.stop();
+						return _this5.stop();
 					};
 					this._container.appendChild(this._btnClose);
 				}
@@ -497,7 +560,6 @@
 					var selector = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 					var popperOptions = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-
 					if (selector) {
 						var referenceTag = document.querySelector(selector);
 						var options = Object.assign({
@@ -517,9 +579,15 @@
 						}
 						return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
 					}
-					this._tag.style.left = window.innerWidth / 2 - this._tag.clientWidth / 2 + "px";
-					this._tag.style.top = window.innerHeight / 2 - this._tag.clientHeight / 2 + "px";
 
+					var centerTag = document.querySelector("#maindiv");
+					var clientHeight = this._tag.clientHeight || 0,
+					    clientWidth = this._tag.clientWidth || 0,
+					    innerWidth = window.innerWidth || document.documentElement.clientWidth || 0,
+					    innerHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+					// console.log(`${clientHeight} ${clientWidth} ${innerWidth} ${innerHeight}`);
+					this._tag.style.left = innerWidth / 2 - clientWidth / 2 + "px";
+					this._tag.style.top = innerHeight / 2 - clientHeight / 2 + "px";
 					return null;
 				}
 			}, {
@@ -1927,11 +1995,16 @@
 		});
 		exports.addClass = addClass;
 		exports.removeClass = removeClass;
+		exports.tagIsVisible = tagIsVisible;
 		function addClass(el, className) {
 			el.className = el.className.split(" ").concat([className]).join(" ");
 		}
 		function removeClass(el, className) {
 			el.className = el.className.split(" ").splice(className, 1).join(" ");
+		}
+
+		function tagIsVisible(el) {
+			return !!el && el.offsetParent !== null && el.style.display !== "none" && el.style.visibility !== "hidden";
 		}
 
 	/***/ }
