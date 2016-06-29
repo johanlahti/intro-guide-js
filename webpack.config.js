@@ -5,7 +5,7 @@ module.exports = {
 	output: {
 		path: './dist/js',
 		filename: 'bundle.js',
-		library: "initIntroGuide",
+		library: "introGuide",
 		libraryTarget: "umd"
 	},
 	module: {

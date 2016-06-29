@@ -250,6 +250,7 @@
 					if (this._container.children.length === 0) {
 						this._initGui();
 					}
+					this._container.style.display = "block";
 					this.goToStep(this._stepIndex);
 					utils.addClass(this._container, "ig-fadein");
 					// setTimeout(() => {
@@ -290,6 +291,7 @@
 							_this2._canvas = null;
 							_this2._btnClose = null;
 							_this2._infoBox = null;
+							_this2._container.style.display = "none";
 							_this2._container.innerHTML = "";
 						}, 300);
 						if (this._config.onStop) {
@@ -375,11 +377,11 @@
 							}
 							_this4._nav.updateGui(step, stepConfig);
 
-							var positionObj = _this4._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, _this4._infoBox._tag.style.position); //stepConfig.popperOptions);
+							var positionObj = _this4._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
 							var position = positionObj && positionObj.reference ? positionObj.reference : null;
-							if (utils.getBrowser().ie) {
-								position.top += 100; // Test
-							}
+							// if (utils.getBrowser().ie) {
+							// 	position.top += 100; // Test
+							// }
 							_this4._drawHole(position);
 							_this4._navDelayTimeout = setTimeout(function () {
 								_this4._nav._tag.style.visibility = "visible";
@@ -518,7 +520,7 @@
 					c.height = winHeight;
 
 					// ctx.fillRect(0,0,winWidth,winHeight);
-
+					ctx.beginPath(); // needed for IE and Edge
 					ctx.moveTo(0, 0);
 					ctx.lineTo(winWidth, 0);
 					ctx.lineTo(winWidth, winHeight);

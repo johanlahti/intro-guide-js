@@ -462,34 +462,10 @@ print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
 			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
 			<script src="assets/js/main.js"></script>
 
+			
+			<!-- These are the scripts for using intro-guide-js (also remember to include the CSS style "dist/bundle.css") -->
 			<script src="../../dist/js/bundle.js"></script>
-			<script>
-				var container = document.querySelector("#intro");
-				var introConfig = {
-					stepIndex: 0, // starting step index
-					steps: [
-						{
-							title: "The title",
-							description: "The description",
-							selector: ".avatar"
-						},
-						{
-							title: "The title 2",
-							description: "The description 2",
-							selector: ".major"
-						},
-						{
-							title: "The title 3",
-							description: "The description 3",
-							selector: ".button"
-						}
-					]
-				};
-				var myIntroGuide = introGuide.create(container, introConfig);
-				myIntroGuide.start();
-
-
-			</script>
+			<script src="../js/initWithGlobal.js"></script>
 
 	</body>
 </html>

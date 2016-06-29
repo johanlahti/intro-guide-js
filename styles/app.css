@@ -1,6 +1,10 @@
 .ig-maincontainer {
   font-size: 2rem;
-  position: fixed;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
 }
 .ig-canvas-with-hole {
   z-index: 1;
@@ -17,8 +21,8 @@
 .ig-btnclose {
   position: fixed;
   display: block;
-  right: 0.1em;
-  top: -0.2em;
+  right: 0.2em;
+  top: 0;
   color: #ccc;
   z-index: 1;
   font-size: 1.6em;

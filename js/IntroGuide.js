@@ -65,6 +65,7 @@ export class IntroGuide {
 		if (this._container.children.length === 0) {
 			this._initGui();
 		}
+		this._container.style.display = "block";
 		this.goToStep(this._stepIndex);
 		utils.addClass(this._container, "ig-fadein");
 		// setTimeout(() => {
@@ -101,6 +102,7 @@ export class IntroGuide {
 				this._canvas = null;
 				this._btnClose = null;
 				this._infoBox = null;
+				this._container.style.display = "none";
 				this._container.innerHTML = "";
 			}, 300);
 			if (this._config.onStop) {
@@ -181,11 +183,8 @@ export class IntroGuide {
 				}
 				this._nav.updateGui(step, stepConfig);
 
-				var positionObj = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, this._infoBox._tag.style.position); //stepConfig.popperOptions);
+				var positionObj = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
 				var position = positionObj && positionObj.reference ? positionObj.reference : null;
-				// if (utils.getBrowser().ie) {
-				// 	position.top += 100; // Test
-				// }
 				this._drawHole( position  );
 				this._navDelayTimeout = setTimeout(() => {
 					this._nav._tag.style.visibility = "visible";

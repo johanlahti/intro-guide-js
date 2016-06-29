@@ -1,6 +1,6 @@
 {
   "name": "intro-guide-js",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "A library for creating a step-by-step introduction GUI, showing and describing functionality in a web application",
   "main": "dist/js/bundle.js",
   "directories": {
