@@ -51,21 +51,89 @@
 	var introConfig = {
 		stepIndex: 0, // starting step index (optional)
 		steps: [{
-			title: "The title here",
-			description: "The description describes some very useful tool. You can use this tool.",
+			title: "Welcome!",
+			description: 'You can use your left/right keys to navigate between the steps',
+			selector: null,
+			btnRightLabel: "Get started" // Custom label for this step
+
+		}, {
+			title: "Close button",
+			description: "To quit this intro – click this button (or press Escape)",
+			selector: ".ig-btnclose i"
+		}, {
+			title: "This element",
+			description: 'You can tell which element to highlight using a CSS selector',
 			selector: ".image.avatar"
 		}, {
-			title: "The title 2",
-			description: "The description 2",
+			title: "No selector?",
+			description: 'Then the text will be centered',
+			selector: null
+		}, {
+			title: "Element not visible?",
+			description: 'If the element is not visible the step will be skipped (Psst! You may not see the next step)',
+			selector: null
+		}, {
+			title: "Only big screens will render this step",
+			description: "Try making the window smaller to see how this step is skipped",
+			selector: ".button.small-screen-hide"
+		}, {
+			title: "Re-render on resize",
+			description: "The GUI will adapt to window resize",
 			selector: ".major"
-		}, // popperOptions: {
-		// 	placement: "right",
-		//  			flipBehavior: ["left", "top", "bottom"]
-		// }
-		{
-			title: "The title 3",
-			description: "The description 3",
-			selector: ".button"
+		}, {
+			title: "Before show",
+			description: "Do something before the step is rendered by defining a beforeShow function",
+			selector: ".major",
+			beforeShow: function beforeShow(callback, utils) {
+				var theTag = document.querySelector(".major");
+				var tagIsVisible = utils.tagIsVisible(theTag);
+				var ms = null; // delay for rendering this step
+				if (tagIsVisible) {
+					theTag.style.transition = "transform 0.5s";
+					theTag.style.transform = "scale(0.5,0.5)";
+					ms = 500;
+				}
+				callback(ms);
+			},
+			afterHide: function afterHide(callback, utils) {
+				var theTag = document.querySelector(".major");
+				var tagIsVisible = utils.tagIsVisible(theTag);
+				var ms = null; // delay for rendering this step
+				if (tagIsVisible) {
+					theTag.style.transition = null;
+					theTag.style.transform = null;
+					// ms = 0;
+				}
+				callback(ms);
+			}
+		}, {
+			title: "After hide",
+			description: "Likewise, you can execute a function when leaving the step",
+			selector: ".major"
+		}, {
+			title: "Scrolling down",
+			description: "We had to scroll down to reach here",
+			selector: "article:nth-child(5)"
+		}, {
+			title: "Customized buttons",
+			description: 'You can customize the buttons\' appearence for each step',
+			selector: ".image.avatar",
+			btnLeftLabel: "Back", // Custom label for this step
+			btnLeftIcon: "fa fa-chevron-circle-left", // Custom icon for this step
+			btnRightLabel: "Next", // Custom label for this step
+			btnRightIcon: "fa fa-chevron-circle-right" // Custom icon for this step
+		}, {
+			title: "Truely open source",
+			description: "intro-guide-js has an MIT License (can be used in commercial projects too!)",
+			selector: null,
+			btnRightLabel: "Done", // Custom label for this step
+			btnRightIcon: "fa fa-check" // Custom icon for this step
+		}, {
+			title: "Done!",
+			description: "Hope you find intro-guide-js useful. Don't hesitate to give feedback or contribute.",
+			selector: null,
+			btnRightLabel: "Done", // Custom label for this step
+			btnRightIcon: "fa fa-check" // Custom icon for this step
 		}] // (required)
 	};
 	var container = document.querySelector("#intro"); // This is where the intro-guide will reside
@@ -82,9 +150,9 @@
 		else if(typeof define === 'function' && define.amd)
 			define([], factory);
 		else if(typeof exports === 'object')
-			exports["initIntroGuide"] = factory();
+			exports["introGuide"] = factory();
 		else
-			root["initIntroGuide"] = factory();
+			root["introGuide"] = factory();
 	})(this, function() {
 	return /******/ (function(modules) { // webpackBootstrap
 	/******/ 	// The module cache
@@ -176,6 +244,8 @@
 
 		var utils = _interopRequireWildcard(_utils);
 
+		var _defaultConfig = __webpack_require__(6);
+
 		function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 		function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -184,6 +254,7 @@
 			function IntroGuide(container, config) {
 				_classCallCheck(this, IntroGuide);
 
+				this._scrollOffsetX = 0; // hard coded X scroll offset TODO: make dynamic
 				this._container = container;
 				this._container.className = "ig-maincontainer";
 				this._config = this._preProcessConfig(config);
@@ -195,22 +266,25 @@
 			_createClass(IntroGuide, [{
 				key: "_preProcessConfig",
 				value: function _preProcessConfig(config) {
-					var defaults = {};
-					return Object.assign(defaults, config);
+					return Object.assign({}, _defaultConfig.defaultConfig, config);
 				}
 			}, {
 				key: "_bindEvents",
 				value: function _bindEvents() {
 					this._handleResizeBound = this._handleResizeBound || this._handleResize.bind(this);
 					this._onKeyDownBound = this._onKeyDownBound || this._onKeyDown.bind(this);
+					this._onScrollBound = this._onScrollBound || this._onScroll.bind(this);
+
 					window.addEventListener("resize", this._handleResizeBound);
 					window.addEventListener("keydown", this._onKeyDownBound);
+					window.addEventListener("scroll", this._onScrollBound);
 				}
 			}, {
 				key: "_unbindEvents",
 				value: function _unbindEvents() {
 					window.removeEventListener('resize', this._handleResizeBound);
 					window.removeEventListener('keydown', this._onKeyDownBound);
+					window.removeEventListener("scroll", this._onScrollBound);
 				}
 			}, {
 				key: "_onKeyDown",
@@ -229,6 +303,21 @@
 							this.goToStep(this._stepIndex + 1);
 							break;
 					}
+				}
+			}, {
+				key: "_allowScroll",
+				value: function _allowScroll(allow) {
+					if (allow === true) {
+						window.removeEventListener("scroll", this._onScrollBound);
+					} else {
+						window.addEventListener("scroll", this._onScrollBound);
+					}
+				}
+			}, {
+				key: "_onScroll",
+				value: function _onScroll(e) {
+					console.log("scroll: " + this._scrollOffsetY);
+					window.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 				}
 			}, {
 				key: "_handleResize",
@@ -275,7 +364,9 @@
 							document.addEventListener("DOMContentLoaded", this._start.bind(this));
 						}
 					} else {
-						this._start();
+						setTimeout(function () {
+							_this._start();
+						}, 1000);
 					}
 				}
 			}, {
@@ -309,7 +400,7 @@
 					var _this3 = this;
 
 					var proceed = function proceed() {
-						var incrementor = _this3._prevStepIndex === null || _this3._prevStepIndex < _this3._stepIndex ? 1 : -1;
+						var incrementor = _this3._prevStepIndex === null || _this3._prevStepIndex <= _this3._stepIndex ? 1 : -1;
 						_this3.goToStep(_this3._stepIndex + incrementor);
 					};
 					if (stepConfig.selector) {
@@ -326,6 +417,13 @@
 					return ok;
 				}
 			}, {
+				key: "scrollTo",
+				value: function scrollTo(x, y) {
+					this._allowScroll(true);
+					window.scrollTo(x, y);
+					this._allowScroll(false);
+				}
+			}, {
 				key: "goToStep",
 				value: function goToStep(step) {
 					if (this._navDelayTimeout) {
@@ -334,6 +432,11 @@
 					if (this._beforeShowTimeout) {
 						clearTimeout(this._beforeShowTimeout);
 					}
+
+					// Start from scroll == 0
+					this._scrollOffsetX = 0;
+					this._scrollOffsetY = 0;
+					this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 
 					utils.removeClass(this._nav._tag, "ig-fadein-nav");
 					this._nav._tag.style.visibility = "hidden";
@@ -350,20 +453,25 @@
 								navBtnLeft.style.display = "none";
 							}
 							break;
-						case this._config.steps.length - 1:
-
-							break;
+						case -1:
+							return this.goToStep(step + 1);
+						case this._config.steps.length:
+							return this.goToStep(step - 1);
 						default:
 							navBtnLeft.style.display = navBtnRight.style.display;
-							if (step < 0) {
-								return this.stop();
-								// TODO: option "go to end"
-								// step = this._config.steps.length - 1;
-							} else if (step > this._config.steps.length - 1) {
-									return this.stop();
-									// TODO: option "go to end"
-									// step = 0;
-								}
+						// if (step < 0) {
+						// 	this._stepIndex = 0;
+						// 	return;
+						// 	// this.goToStep(this._stepIndex);
+						// 	// return this.stop();
+						// 	// TODO: option "go to end"
+						// 	// step = this._config.steps.length - 1;
+						// }
+						// else if (step > this._config.steps.length - 1) {
+						// 	return this.stop();
+						// 	// TODO: option "go to end"
+						// 	// step = 0;
+						// }
 					}
 
 					function beforeShowCallback() {
@@ -377,11 +485,23 @@
 							}
 							_this4._nav.updateGui(step, stepConfig);
 
-							var positionObj = _this4._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
+							var positionObj = _this4._infoBox.updateGui(stepConfig.title, stepConfig.description, stepConfig.selector, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
 							var position = positionObj && positionObj.reference ? positionObj.reference : null;
-							// if (utils.getBrowser().ie) {
-							// 	position.top += 100; // Test
-							// }
+							if (position && position.top) {
+								var marginY = 100;
+								var isOutsideViewport = window.innerHeight - position.top + window.pageYOffset - marginY < 0;
+								if (isOutsideViewport) {
+									_this4._scrollOffsetY = position.top - marginY;
+
+									// We need to adjust top and bottom to the viewport's offset (since canvas only extends over the viewport)
+									position.top -= _this4._scrollOffsetY;
+									position.bottom -= _this4._scrollOffsetY;
+
+									// Scroll us so we can see the thing
+									_this4.scrollTo(_this4._scrollOffsetX, _this4._scrollOffsetY);
+								}
+							}
+
 							_this4._drawHole(position);
 							_this4._navDelayTimeout = setTimeout(function () {
 								_this4._nav._tag.style.visibility = "visible";
@@ -397,7 +517,7 @@
 					}
 					// const goingForward = !this._prevStepIndex || this._prevStepIndex < this._stepIndex;
 
-					function hideCallback() {
+					function afterHideCallback() {
 						var ms = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
 						if (stepConfig.beforeShow) {
@@ -410,19 +530,30 @@
 
 					if (this._prevStepIndex) {
 						var prevStepConfig = this._getStepConfig(this._prevStepIndex);
-						if (prevStepConfig && prevStepConfig.hide) {
-							prevStepConfig.hide(hideCallback.bind(this), utils);
+						if (prevStepConfig && prevStepConfig.afterHide) {
+							prevStepConfig.afterHide(afterHideCallback.bind(this), utils);
 						} else {
-							hideCallback.call(this);
+							afterHideCallback.call(this);
 						}
 					} else {
-						hideCallback.call(this);
+						afterHideCallback.call(this);
 					}
 				}
 			}, {
 				key: "_getStepConfig",
 				value: function _getStepConfig(stepIndex) {
-					return this._config.steps[stepIndex];
+					var c = this._config;
+					var stepConfig = c.steps[stepIndex];
+					switch (stepIndex) {
+						case c.steps.length - 1:
+							// Apply default settings for last step
+							stepConfig = Object.assign({}, {
+								btnRightLabel: c.btnRightLabelEnd,
+								btnRightIcon: c.btnRightIconEnd
+							}, stepConfig);
+							break;
+					}
+					return stepConfig;
 				}
 			}, {
 				key: "_initGui",
@@ -615,10 +746,8 @@
 				}
 			}, {
 				key: "updateGui",
-				value: function updateGui() {
-					var selector = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-					var title = arguments[1];
-					var description = arguments[2];
+				value: function updateGui(title, description) {
+					var selector = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
 					var popperOptions = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
 
 					var header = this._tag.querySelector(".ig-infobox-header");
@@ -1910,6 +2039,8 @@
 
 		var _utils = __webpack_require__(5);
 
+		var _defaultConfig = __webpack_require__(6);
+
 		function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 		var Navigation = exports.Navigation = function () {
@@ -1955,13 +2086,13 @@
 					switch (step) {
 						case 0:
 							// Hide btnPrev on first step, unless...
-							if (!config.btnLeftLabel) {
+							if (!config.btnLeftLabel && !config.btnLeftIcon) {
 								btnPrev.style.display = "none";
 							}
 							break;
 						case this._nbrOfSteps - 1:
 							// Hide btnNext on last step, unless...
-							if (!config.btnRightLabel) {
+							if (!config.btnRightLabel && !config.btnRightIcon) {
 								btnNext.style.display = "none";
 							}
 							break;
@@ -1991,14 +2122,14 @@
 					var iconPrev = btnPrev.querySelector("i");
 					iconPrev.className = "";
 					if (config.btnLeftIcon !== false) {
-						(0, _utils.addClass)(iconPrev, typeof config.btnLeftIcon === "string" ? config.btnLeftIcon : "fa fa-arrow-left");
+						(0, _utils.addClass)(iconPrev, typeof config.btnLeftIcon === "string" ? config.btnLeftIcon : _defaultConfig.defaultConfig.btnLeftIcon);
 					}
 					// }
 					// if (config.btnRightIcon) {
 					var iconNext = btnNext.querySelector("i");
 					iconNext.className = "";
 					if (config.btnRightIcon !== false) {
-						(0, _utils.addClass)(iconNext, typeof config.btnRightIcon === "string" ? config.btnRightIcon : "fa fa-arrow-right");
+						(0, _utils.addClass)(iconNext, typeof config.btnRightIcon === "string" ? config.btnRightIcon : _defaultConfig.defaultConfig.btnRightIcon);
 					}
 					// }
 				}
@@ -2044,6 +2175,26 @@
 				ie11: ieVersion === 11
 			};
 		}
+
+	/***/ },
+	/* 6 */
+	/***/ function(module, exports) {
+
+		"use strict";
+
+		Object.defineProperty(exports, "__esModule", {
+			value: true
+		});
+		var defaultConfig = exports.defaultConfig = {
+
+			stepIndex: 0, // starting step index
+			showCount: true, // Show step count
+			btnLeftIcon: "fa fa-chevron-left",
+			btnRightIcon: "fa fa-chevron-right",
+			btnRightLabelEnd: "Done", // Optional label for the last slide (for the right button)
+			btnRightIconEnd: "fa fa-check" // Icon for the last slide (clicking this will exit)
+
+		};
 
 	/***/ }
 	/******/ ])

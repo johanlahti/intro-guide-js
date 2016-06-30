@@ -1,7 +1,7 @@
 {
   "name": "intro-guide-js",
-  "version": "0.0.0",
-  "description": "A library for creating a step-by-step introduction GUI, showing and describing functionality in a web application",
+  "version": "0.0.1",
+  "description": "A JS library for creating a beautiful step-by-step introduction to your web application's features",
   "main": "dist/js/bundle.js",
   "directories": {
     "test": "test"
@@ -9,7 +9,8 @@
   "files": [
     "dist/js/bundle.js",
     "dist/css/bundle.css",
-    "dist/fonts/*"
+    "dist/fonts/*",
+    "README.md"
   ],
   "scripts": {
     "test": "npm test"

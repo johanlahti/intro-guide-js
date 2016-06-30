@@ -1,5 +1,5 @@
 import { addClass, removeClass } from "./utils"
-
+import { defaultConfig } from "./defaultConfig"
 
 export class Navigation {
 	constructor(container, clickPrev, clickNext, nbrOfSteps) {
@@ -43,13 +43,13 @@ export class Navigation {
 		switch (step) {
 			case 0:
 				// Hide btnPrev on first step, unless...
-				if ( !config.btnLeftLabel ) {
+				if ( !config.btnLeftLabel && !config.btnLeftIcon) {
 					btnPrev.style.display = "none";
 				}
 				break;
 			case this._nbrOfSteps - 1:
 				// Hide btnNext on last step, unless...
-				if ( !config.btnRightLabel ) {
+				if ( !config.btnRightLabel && !config.btnRightIcon ) {
 					btnNext.style.display = "none";
 				}
 				break;
@@ -79,14 +79,14 @@ export class Navigation {
 		let iconPrev = btnPrev.querySelector("i");
 		iconPrev.className = "";
 		if (config.btnLeftIcon !== false) {
-			addClass(iconPrev, typeof(config.btnLeftIcon) === "string" ? config.btnLeftIcon : "fa fa-arrow-left");
+			addClass(iconPrev, typeof(config.btnLeftIcon) === "string" ? config.btnLeftIcon : defaultConfig.btnLeftIcon);
 		}
 		// }
 		// if (config.btnRightIcon) {
 		let iconNext = btnNext.querySelector("i");
 		iconNext.className = "";
 		if (config.btnRightIcon !== false) {
-			addClass(iconNext, typeof(config.btnRightIcon) === "string" ? config.btnRightIcon : "fa fa-arrow-right");
+			addClass(iconNext, typeof(config.btnRightIcon) === "string" ? config.btnRightIcon : defaultConfig.btnRightIcon);
 		}
 		// }
 

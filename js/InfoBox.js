@@ -48,7 +48,7 @@ export class InfoBox {
 	}
 
 	
-	updateGui(selector=null, title, description, popperOptions={}) {
+	updateGui(title, description, selector=null, popperOptions={}) {
 		var header = this._tag.querySelector(".ig-infobox-header");
 		if (header.childNodes.length) {
 			header.removeChild( header.childNodes[0] );

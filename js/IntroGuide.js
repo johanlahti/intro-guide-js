@@ -2,11 +2,13 @@ import { InfoBox } from "./InfoBox"
 import { Navigation } from "./Navigation"
 // import { Tooltip } from "Tooltip"
 import * as utils from "./utils"
+import { defaultConfig } from "./defaultConfig"
 
 
 
 export class IntroGuide {
 	constructor(container, config) {
+		this._scrollOffsetX = 0; // hard coded X scroll offset TODO: make dynamic
 		this._container = container;
 		this._container.className = "ig-maincontainer";
 		this._config = this._preProcessConfig(config);
@@ -16,20 +18,25 @@ export class IntroGuide {
 	}
 
 	_preProcessConfig(config) {
-		var defaults = {};
-		return Object.assign(defaults, config);
+		return Object.assign({}, defaultConfig, config);
 	}
 
 	_bindEvents() {
 		this._handleResizeBound = this._handleResizeBound || this._handleResize.bind(this);
 		this._onKeyDownBound = this._onKeyDownBound || this._onKeyDown.bind(this);
+		this._onScrollBound = this._onScrollBound || this._onScroll.bind(this);
+
 		window.addEventListener("resize", this._handleResizeBound);
 		window.addEventListener("keydown", this._onKeyDownBound);
+		window.addEventListener("scroll", this._onScrollBound);
+		
 	}
 	_unbindEvents() {
 		window.removeEventListener('resize', this._handleResizeBound);
 		window.removeEventListener('keydown', this._onKeyDownBound);
+		window.removeEventListener("scroll", this._onScrollBound);
 	}
+
 
 	_onKeyDown(e) {
 		switch (e.keyCode) {
@@ -46,6 +53,20 @@ export class IntroGuide {
 				this.goToStep(this._stepIndex + 1);
 				break;
 		}
+	}
+
+	_allowScroll(allow) {
+		if (allow === true) {
+			window.removeEventListener("scroll", this._onScrollBound);
+		}
+		else {
+			window.addEventListener("scroll", this._onScrollBound);
+		}
+	}
+
+	_onScroll(e) {
+		console.log("scroll: "+this._scrollOffsetY);
+		window.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 	}
 
 	_handleResize() {
@@ -89,7 +110,9 @@ export class IntroGuide {
 			}
 		}
 		else {
-			this._start();
+			setTimeout( () => {
+				this._start();
+			}, 1000);
 		}
 	}
 
@@ -118,7 +141,7 @@ export class IntroGuide {
 
 	_checkStepConfig(stepConfig) {
 		const proceed = () => {
-			let incrementor = (this._prevStepIndex === null || this._prevStepIndex < this._stepIndex) ? 1 : -1;
+			let incrementor = (this._prevStepIndex === null || this._prevStepIndex <= this._stepIndex) ? 1 : -1;
 			this.goToStep(this._stepIndex + incrementor);
 		}
 		if (stepConfig.selector) {
@@ -135,6 +158,12 @@ export class IntroGuide {
 		return ok;
 	}
 
+	scrollTo(x, y) {
+		this._allowScroll(true);
+		window.scrollTo(x, y);
+		this._allowScroll(false);
+	}
+
 	goToStep(step) {
 		if (this._navDelayTimeout) {
 			clearTimeout(this._navDelayTimeout);
@@ -142,6 +171,12 @@ export class IntroGuide {
 		if (this._beforeShowTimeout) {
 			clearTimeout(this._beforeShowTimeout);
 		}
+
+		// Start from scroll == 0
+		this._scrollOffsetX = 0;
+		this._scrollOffsetY = 0;
+		this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
+		
 
 		utils.removeClass(this._nav._tag, "ig-fadein-nav");
 		this._nav._tag.style.visibility = "hidden";
@@ -158,21 +193,25 @@ export class IntroGuide {
 					navBtnLeft.style.display = "none";
 				}
 				break;
-			case this._config.steps.length - 1:
-
-				break;
+			case -1:
+				return this.goToStep(step+1);
+			case this._config.steps.length:
+				return this.goToStep(step-1);
 			default:
 				navBtnLeft.style.display = navBtnRight.style.display;
-				if (step < 0) {
-					return this.stop();
-					// TODO: option "go to end"
-					// step = this._config.steps.length - 1;
-				}
-				else if (step > this._config.steps.length - 1) {
-					return this.stop();
-					// TODO: option "go to end"
-					// step = 0;
-				}
+				// if (step < 0) {
+				// 	this._stepIndex = 0;
+				// 	return;
+				// 	// this.goToStep(this._stepIndex);
+				// 	// return this.stop();
+				// 	// TODO: option "go to end"
+				// 	// step = this._config.steps.length - 1;
+				// }
+				// else if (step > this._config.steps.length - 1) {
+				// 	return this.stop();
+				// 	// TODO: option "go to end"
+				// 	// step = 0;
+				// }
 		}
 
 		
@@ -183,8 +222,24 @@ export class IntroGuide {
 				}
 				this._nav.updateGui(step, stepConfig);
 
-				var positionObj = this._infoBox.updateGui(stepConfig.selector, stepConfig.title, stepConfig.description, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
+				var positionObj = this._infoBox.updateGui(stepConfig.title, stepConfig.description, stepConfig.selector, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
 				var position = positionObj && positionObj.reference ? positionObj.reference : null;
+				if (position && position.top) {
+					const marginY = 100;
+					const isOutsideViewport = window.innerHeight - position.top + window.pageYOffset - marginY < 0;
+					if (isOutsideViewport) {
+						this._scrollOffsetY = position.top - marginY;
+						
+						// We need to adjust top and bottom to the viewport's offset (since canvas only extends over the viewport)
+						position.top -= this._scrollOffsetY;
+						position.bottom -= this._scrollOffsetY;
+						
+						// Scroll us so we can see the thing
+						this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
+					}
+				}
+
+
 				this._drawHole( position  );
 				this._navDelayTimeout = setTimeout(() => {
 					this._nav._tag.style.visibility = "visible";
@@ -201,7 +256,7 @@ export class IntroGuide {
 		}
 		// const goingForward = !this._prevStepIndex || this._prevStepIndex < this._stepIndex;
 
-		function hideCallback(ms=null) {
+		function afterHideCallback(ms=null) {
 			if (stepConfig.beforeShow) {  // && goingForward) {
 				stepConfig.beforeShow(beforeShowCallback.bind(this), utils);
 			}
@@ -212,20 +267,31 @@ export class IntroGuide {
 
 		if (this._prevStepIndex) {
 			const prevStepConfig = this._getStepConfig(this._prevStepIndex);
-			if (prevStepConfig && prevStepConfig.hide) {
-				prevStepConfig.hide(hideCallback.bind(this), utils);
+			if (prevStepConfig && prevStepConfig.afterHide) {
+				prevStepConfig.afterHide(afterHideCallback.bind(this), utils);
 			}
 			else {
-				hideCallback.call(this);
+				afterHideCallback.call(this);
 			}
 		}
 		else {
-			hideCallback.call(this);
+			afterHideCallback.call(this);
 		}
 	}
 
 	_getStepConfig(stepIndex) {
-		return this._config.steps[stepIndex];
+		const c = this._config;
+		let stepConfig = c.steps[stepIndex];
+		switch (stepIndex) {
+			case c.steps.length - 1:
+				// Apply default settings for last step
+				stepConfig = Object.assign({}, {
+					btnRightLabel: c.btnRightLabelEnd,
+					btnRightIcon: c.btnRightIconEnd
+				}, stepConfig);
+				break;
+		}
+		return stepConfig;
 	}
 
 
