@@ -2975,7 +2975,9 @@
 /* Small */
 
 	@media screen and (max-width: 736px) {
-
+		.small-screen-hide {
+			display: none;
+		}
 		/* Basic */
 
 			h1 {
@@ -3053,7 +3055,9 @@
 /* XSmall */
 
 	@media screen and (max-width: 480px) {
-
+		.small-screen-hide {
+			display: none;
+		}
 		/* List */
 
 			ul.actions {

@@ -6,34 +6,34 @@ var introConfig = {
 	steps: [
 		{
 			title: "Welcome!",
-			description: 'You can use your left/right keys to navigate between the steps',
+			description: 'Press the button below or use your left/right keys to navigate',
 			selector: null,
 			btnRightLabel: "Get started"						// Custom label for this step
 
 		},
 		{
 			title: "Close button",
-			description: "To quit this intro – click this button (or press Escape)",
+			description: "To quit the intro, click this button or press Escape",
 			selector: ".ig-btnclose i"
 		},
 		{
 			title: "This element",
-			description: 'You can tell which element to highlight using a CSS selector',
+			description: 'Set element to highlight using a CSS selector',
 			selector: ".image.avatar"
 		},
 		{
 			title: "No selector?",
-			description: 'Then the text will be centered',
+			description: 'The text will be centered',
 			selector: null
 		},
 		{
-			title: "Element not visible?",
-			description: 'If the element is not visible the step will be skipped (Psst! You may not see the next step)',
+			title: "Element not visible…?",
+			description: '…then the step will be skipped (you may not see the next step!)',
 			selector: null
 		},
 		{
 			title: "Only big screens will render this step",
-			description: "Try making the window smaller to see how this step is skipped",
+			description: "Try making the window smaller and it will proceed to the next step",
 			selector: ".button.small-screen-hide"
 		},
 		{
@@ -56,21 +56,18 @@ var introConfig = {
 				}
 				callback(ms);
 			},
-			afterHide: function(callback, utils) {
+			afterHide: function(utils) {
 				var theTag = document.querySelector(".major");
 				var tagIsVisible = utils.tagIsVisible( theTag );
-				var ms = null; // delay for rendering this step
 				if (tagIsVisible) {
 					theTag.style.transition = null;
 					theTag.style.transform = null;
-					// ms = 0;
 				}
-				callback(ms);
 			}
 		},
 		{
 			title: "After hide",
-			description: "Likewise, you can execute a function when leaving the step",
+			description: "Likewise, you can execute a function on leave",
 			selector: ".major",
 		},
 		{
@@ -80,7 +77,7 @@ var introConfig = {
 		},
 		{
 			title: "Customized buttons",
-			description: 'You can customize the buttons\' appearence for each step',
+			description: 'You can customize the buttons',
 			selector: ".image.avatar",
 			btnLeftLabel: "Back",						// Custom label for this step
 			btnLeftIcon: "fa fa-chevron-circle-left",	// Custom icon for this step
@@ -89,17 +86,10 @@ var introConfig = {
 		},
 		{
 			title: "Truely open source",
-			description: "intro-guide-js has an MIT License (can be used in commercial projects too!)",
+			description: "intro-guide-js has an MIT License",
 			selector: null,
 			btnRightLabel: "Done",						// Custom label for this step
-			btnRightIcon: "fa fa-check"	// Custom icon for this step
-		},
-		{
-			title: "Done!",
-			description: "Hope you find intro-guide-js useful. Don't hesitate to give feedback or contribute.",
-			selector: null,
-			btnRightLabel: "Done",						// Custom label for this step
-			btnRightIcon: "fa fa-check"	// Custom icon for this step
+			btnRightIcon: "fa fa-hand-peace-o"	// Custom icon for this step
 		}
 	]  // (required)
 };

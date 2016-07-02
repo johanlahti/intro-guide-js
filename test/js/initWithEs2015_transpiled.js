@@ -52,29 +52,29 @@
 		stepIndex: 0, // starting step index (optional)
 		steps: [{
 			title: "Welcome!",
-			description: 'You can use your left/right keys to navigate between the steps',
+			description: 'Press the button below or use your left/right keys to navigate',
 			selector: null,
 			btnRightLabel: "Get started" // Custom label for this step
 
 		}, {
 			title: "Close button",
-			description: "To quit this intro – click this button (or press Escape)",
+			description: "To quit the intro, click this button or press Escape",
 			selector: ".ig-btnclose i"
 		}, {
 			title: "This element",
-			description: 'You can tell which element to highlight using a CSS selector',
+			description: 'Set element to highlight using a CSS selector',
 			selector: ".image.avatar"
 		}, {
 			title: "No selector?",
-			description: 'Then the text will be centered',
+			description: 'The text will be centered',
 			selector: null
 		}, {
-			title: "Element not visible?",
-			description: 'If the element is not visible the step will be skipped (Psst! You may not see the next step)',
+			title: "Element not visible…?",
+			description: '…then the step will be skipped (you may not see the next step!)',
 			selector: null
 		}, {
 			title: "Only big screens will render this step",
-			description: "Try making the window smaller to see how this step is skipped",
+			description: "Try making the window smaller and it will proceed to the next step",
 			selector: ".button.small-screen-hide"
 		}, {
 			title: "Re-render on resize",
@@ -95,20 +95,17 @@
 				}
 				callback(ms);
 			},
-			afterHide: function afterHide(callback, utils) {
+			afterHide: function afterHide(utils) {
 				var theTag = document.querySelector(".major");
 				var tagIsVisible = utils.tagIsVisible(theTag);
-				var ms = null; // delay for rendering this step
 				if (tagIsVisible) {
 					theTag.style.transition = null;
 					theTag.style.transform = null;
-					// ms = 0;
 				}
-				callback(ms);
 			}
 		}, {
 			title: "After hide",
-			description: "Likewise, you can execute a function when leaving the step",
+			description: "Likewise, you can execute a function on leave",
 			selector: ".major"
 		}, {
 			title: "Scrolling down",
@@ -116,7 +113,7 @@
 			selector: "article:nth-child(5)"
 		}, {
 			title: "Customized buttons",
-			description: 'You can customize the buttons\' appearence for each step',
+			description: 'You can customize the buttons',
 			selector: ".image.avatar",
 			btnLeftLabel: "Back", // Custom label for this step
 			btnLeftIcon: "fa fa-chevron-circle-left", // Custom icon for this step
@@ -124,16 +121,10 @@
 			btnRightIcon: "fa fa-chevron-circle-right" // Custom icon for this step
 		}, {
 			title: "Truely open source",
-			description: "intro-guide-js has an MIT License (can be used in commercial projects too!)",
+			description: "intro-guide-js has an MIT License",
 			selector: null,
 			btnRightLabel: "Done", // Custom label for this step
-			btnRightIcon: "fa fa-check" // Custom icon for this step
-		}, {
-			title: "Done!",
-			description: "Hope you find intro-guide-js useful. Don't hesitate to give feedback or contribute.",
-			selector: null,
-			btnRightLabel: "Done", // Custom label for this step
-			btnRightIcon: "fa fa-check" // Custom icon for this step
+			btnRightIcon: "fa fa-hand-peace-o" // Custom icon for this step
 		}] // (required)
 	};
 	var container = document.querySelector("#intro"); // This is where the intro-guide will reside
@@ -254,7 +245,8 @@
 			function IntroGuide(container, config) {
 				_classCallCheck(this, IntroGuide);
 
-				this._scrollOffsetX = 0; // hard coded X scroll offset TODO: make dynamic
+				this._scrollOffsetX = 0;
+				this._scrollOffsetY = 0;
 				this._container = container;
 				this._container.className = "ig-maincontainer";
 				this._config = this._preProcessConfig(config);
@@ -364,9 +356,7 @@
 							document.addEventListener("DOMContentLoaded", this._start.bind(this));
 						}
 					} else {
-						setTimeout(function () {
-							_this._start();
-						}, 1000);
+						this._start();
 					}
 				}
 			}, {
@@ -410,11 +400,11 @@
 							return false;
 						}
 					}
-					var ok = stepConfig.condition ? stepConfig.condition() : true;
-					if (ok === false) {
-						proceed();
-					}
-					return ok;
+					// var ok = stepConfig.condition ? stepConfig.condition() : true;
+					// if (ok === false) {
+					// 	proceed();
+					// }
+					return true;
 				}
 			}, {
 				key: "scrollTo",
@@ -433,11 +423,6 @@
 						clearTimeout(this._beforeShowTimeout);
 					}
 
-					// Start from scroll == 0
-					this._scrollOffsetX = 0;
-					this._scrollOffsetY = 0;
-					this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
-
 					utils.removeClass(this._nav._tag, "ig-fadein-nav");
 					this._nav._tag.style.visibility = "hidden";
 					var navBtnLeft = this._nav._tag.querySelectorAll(".ig-nav-btn")[0],
@@ -446,6 +431,19 @@
 					this._prevStepIndex = this._stepIndex || null;
 					this._stepIndex = step;
 					var stepConfig = this._getStepConfig(step);
+
+					if (this._prevStepIndex) {
+						// Call afterHide function if any
+						var prevStepConfig = this._getStepConfig(this._prevStepIndex);
+						if (prevStepConfig && prevStepConfig.afterHide) {
+							prevStepConfig.afterHide(utils);
+						}
+					}
+
+					// Start from scroll == 0
+					this._scrollOffsetX = 0;
+					this._scrollOffsetY = 0;
+					// this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 
 					switch (step) {
 						case 0:
@@ -456,7 +454,8 @@
 						case -1:
 							return this.goToStep(step + 1);
 						case this._config.steps.length:
-							return this.goToStep(step - 1);
+							return this.stop();
+						// return this.goToStep(step-1);
 						default:
 							navBtnLeft.style.display = navBtnRight.style.display;
 						// if (step < 0) {
@@ -473,30 +472,45 @@
 						// 	// step = 0;
 						// }
 					}
+					if (this._checkStepConfig(stepConfig) === false) {
+						return;
+					}
 
 					function beforeShowCallback() {
 						var _this4 = this;
 
 						var ms = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
-						var afterTimeout = function afterTimeout() {
-							if (_this4._checkStepConfig(stepConfig) === false) {
-								return;
-							}
+						var beforeShowTimeoutFunc = function beforeShowTimeoutFunc() {
+							// if (this._checkStepConfig(stepConfig) === false) {
+							// 	return;
+							// }
+
+							_this4.scrollTo(_this4._scrollOffsetX, _this4._scrollOffsetY);
 							_this4._nav.updateGui(step, stepConfig);
 
 							var positionObj = _this4._infoBox.updateGui(stepConfig.title, stepConfig.description, stepConfig.selector, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
 							var position = positionObj && positionObj.reference ? positionObj.reference : null;
 							if (position && position.top) {
-								var marginY = 100;
-								var isOutsideViewport = window.innerHeight - position.top + window.pageYOffset - marginY < 0;
-								if (isOutsideViewport) {
+								var marginY = 100; // TODO: Move to options?
+								var marginX = 0; // TODO: Move to options?
+								var isOutsideViewportY = window.innerHeight - position.top + window.pageYOffset - marginY < 0;
+								var isOutsideViewportX = window.innerWidth - position.left + window.pageXOffset - marginX < 0;
+								if (isOutsideViewportX) {
+									_this4._scrollOffsetX = position.left - marginX;
+
+									// We need to adjust left and right to the viewport's offset (since the canvas only extends over the viewport)
+									position.left -= _this4._scrollOffsetX;
+									position.right -= _this4._scrollOffsetX;
+								}
+								if (isOutsideViewportY) {
 									_this4._scrollOffsetY = position.top - marginY;
 
-									// We need to adjust top and bottom to the viewport's offset (since canvas only extends over the viewport)
+									// We need to adjust top and bottom to the viewport's offset (since the canvas only extends over the viewport)
 									position.top -= _this4._scrollOffsetY;
 									position.bottom -= _this4._scrollOffsetY;
-
+								}
+								if (isOutsideViewportX || isOutsideViewportY) {
 									// Scroll us so we can see the thing
 									_this4.scrollTo(_this4._scrollOffsetX, _this4._scrollOffsetY);
 								}
@@ -508,35 +522,18 @@
 								// utils.removeClass(this._nav._tag, "ig-hide");
 								utils.addClass(_this4._nav._tag, "ig-fadein-nav");
 							}, 500);
+							return null;
 						};
-						if (ms) {
-							this._beforeShowTimeout = setTimeout(afterTimeout, ms);
-						} else {
-							afterTimeout();
-						}
+
+						this._beforeShowTimeout = ms ? setTimeout(beforeShowTimeoutFunc, ms) : beforeShowTimeoutFunc();
 					}
 					// const goingForward = !this._prevStepIndex || this._prevStepIndex < this._stepIndex;
 
-					function afterHideCallback() {
-						var ms = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-
-						if (stepConfig.beforeShow) {
-							// && goingForward) {
-							stepConfig.beforeShow(beforeShowCallback.bind(this), utils);
-						} else {
-							beforeShowCallback.call(this);
-						}
-					}
-
-					if (this._prevStepIndex) {
-						var prevStepConfig = this._getStepConfig(this._prevStepIndex);
-						if (prevStepConfig && prevStepConfig.afterHide) {
-							prevStepConfig.afterHide(afterHideCallback.bind(this), utils);
-						} else {
-							afterHideCallback.call(this);
-						}
+					if (stepConfig.beforeShow) {
+						// && goingForward) {
+						stepConfig.beforeShow(beforeShowCallback.bind(this), utils);
 					} else {
-						afterHideCallback.call(this);
+						beforeShowCallback.call(this);
 					}
 				}
 			}, {
@@ -571,6 +568,9 @@
 						_this5.goToStep(_this5._stepIndex - 1);
 						_this5._infoBox._tag.focus();
 					}, function (e) {
+						// if (this._stepIndex > this._config.steps.length - 1) {
+						// 	return this.stop();	
+						// }
 						_this5.goToStep(_this5._stepIndex + 1);
 						_this5._infoBox._tag.focus();
 					}, this._config.steps.length);

@@ -54,16 +54,13 @@ var introConfig = {
 				}
 				callback(ms);
 			},
-			afterHide: function(callback, utils) {
+			afterHide: function(utils) {
 				var theTag = document.querySelector(".major");
 				var tagIsVisible = utils.tagIsVisible( theTag );
-				var ms = null; // delay for rendering this step
 				if (tagIsVisible) {
 					theTag.style.transition = null;
 					theTag.style.transform = null;
-					// ms = 0;
 				}
-				callback(ms);
 			}
 		},
 		{
@@ -89,7 +86,7 @@ var introConfig = {
 			title: "Truely open source",
 			description: "intro-guide-js has an MIT License",
 			selector: null,
-			btnRightLabel: "I'm done",						// Custom label for this step
+			btnRightLabel: "Done",						// Custom label for this step
 			btnRightIcon: "fa fa-hand-peace-o"	// Custom icon for this step
 		}
 	]  // (required)

@@ -8,7 +8,8 @@ import { defaultConfig } from "./defaultConfig"
 
 export class IntroGuide {
 	constructor(container, config) {
-		this._scrollOffsetX = 0; // hard coded X scroll offset TODO: make dynamic
+		this._scrollOffsetX = 0;
+		this._scrollOffsetY = 0;
 		this._container = container;
 		this._container.className = "ig-maincontainer";
 		this._config = this._preProcessConfig(config);
@@ -110,9 +111,7 @@ export class IntroGuide {
 			}
 		}
 		else {
-			setTimeout( () => {
-				this._start();
-			}, 1000);
+			this._start();
 		}
 	}
 
@@ -151,11 +150,11 @@ export class IntroGuide {
 				return false;
 			}
 		}
-		var ok = stepConfig.condition ? stepConfig.condition() : true;
-		if (ok === false) {
-			proceed();
-		}
-		return ok;
+		// var ok = stepConfig.condition ? stepConfig.condition() : true;
+		// if (ok === false) {
+		// 	proceed();
+		// }
+		return true;
 	}
 
 	scrollTo(x, y) {
@@ -172,12 +171,6 @@ export class IntroGuide {
 			clearTimeout(this._beforeShowTimeout);
 		}
 
-		// Start from scroll == 0
-		this._scrollOffsetX = 0;
-		this._scrollOffsetY = 0;
-		this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
-		
-
 		utils.removeClass(this._nav._tag, "ig-fadein-nav");
 		this._nav._tag.style.visibility = "hidden";
 		var navBtnLeft = this._nav._tag.querySelectorAll(".ig-nav-btn")[0],
@@ -186,6 +179,19 @@ export class IntroGuide {
 		this._prevStepIndex = this._stepIndex || null;
 		this._stepIndex = step;
 		const stepConfig = this._getStepConfig(step);
+
+		if (this._prevStepIndex) {
+			// Call afterHide function if any
+			const prevStepConfig = this._getStepConfig(this._prevStepIndex);
+			if (prevStepConfig && prevStepConfig.afterHide) {
+				prevStepConfig.afterHide(utils);
+			}
+		}
+
+		// Start from scroll == 0
+		this._scrollOffsetX = 0;
+		this._scrollOffsetY = 0;
+		// this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 
 		switch (step) {
 			case 0:
@@ -196,7 +202,8 @@ export class IntroGuide {
 			case -1:
 				return this.goToStep(step+1);
 			case this._config.steps.length:
-				return this.goToStep(step-1);
+				return this.stop();
+				// return this.goToStep(step-1);
 			default:
 				navBtnLeft.style.display = navBtnRight.style.display;
 				// if (step < 0) {
@@ -213,27 +220,43 @@ export class IntroGuide {
 				// 	// step = 0;
 				// }
 		}
+		if (this._checkStepConfig(stepConfig) === false) {
+			return;
+		}
 
 		
 		function beforeShowCallback(ms=null) {
-			const afterTimeout = () => {
-				if (this._checkStepConfig(stepConfig) === false) {
-					return;
-				}
+			const beforeShowTimeoutFunc = () => {
+				// if (this._checkStepConfig(stepConfig) === false) {
+				// 	return;
+				// }
+
+				this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 				this._nav.updateGui(step, stepConfig);
 
 				var positionObj = this._infoBox.updateGui(stepConfig.title, stepConfig.description, stepConfig.selector, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
 				var position = positionObj && positionObj.reference ? positionObj.reference : null;
 				if (position && position.top) {
-					const marginY = 100;
-					const isOutsideViewport = window.innerHeight - position.top + window.pageYOffset - marginY < 0;
-					if (isOutsideViewport) {
+					const marginY = 100;	// TODO: Move to options?
+					const marginX = 0;		// TODO: Move to options?
+					const isOutsideViewportY = window.innerHeight - position.top + window.pageYOffset - marginY < 0;
+					const isOutsideViewportX = window.innerWidth - position.left + window.pageXOffset - marginX < 0;
+					if (isOutsideViewportX) {
+						this._scrollOffsetX = position.left - marginX;
+						
+						// We need to adjust left and right to the viewport's offset (since the canvas only extends over the viewport)
+						position.left -= this._scrollOffsetX;
+						position.right -= this._scrollOffsetX;
+					}
+					if (isOutsideViewportY) {
 						this._scrollOffsetY = position.top - marginY;
 						
-						// We need to adjust top and bottom to the viewport's offset (since canvas only extends over the viewport)
+						// We need to adjust top and bottom to the viewport's offset (since the canvas only extends over the viewport)
 						position.top -= this._scrollOffsetY;
 						position.bottom -= this._scrollOffsetY;
 						
+					}
+					if (isOutsideViewportX || isOutsideViewportY) {
 						// Scroll us so we can see the thing
 						this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 					}
@@ -246,36 +269,19 @@ export class IntroGuide {
 					// utils.removeClass(this._nav._tag, "ig-hide");
 					utils.addClass(this._nav._tag, "ig-fadein-nav");
 				}, 500);
+				return null;
 			}
-			if (ms) {
-				this._beforeShowTimeout = setTimeout(afterTimeout, ms);
-			}
-			else {
-				afterTimeout();
-			}
+
+			this._beforeShowTimeout = ms ? setTimeout(beforeShowTimeoutFunc, ms) : beforeShowTimeoutFunc();
+
 		}
 		// const goingForward = !this._prevStepIndex || this._prevStepIndex < this._stepIndex;
 
-		function afterHideCallback(ms=null) {
-			if (stepConfig.beforeShow) {  // && goingForward) {
-				stepConfig.beforeShow(beforeShowCallback.bind(this), utils);
-			}
-			else {
-				beforeShowCallback.call(this);
-			}
-		}
-
-		if (this._prevStepIndex) {
-			const prevStepConfig = this._getStepConfig(this._prevStepIndex);
-			if (prevStepConfig && prevStepConfig.afterHide) {
-				prevStepConfig.afterHide(afterHideCallback.bind(this), utils);
-			}
-			else {
-				afterHideCallback.call(this);
-			}
+		if (stepConfig.beforeShow) {  // && goingForward) {
+			stepConfig.beforeShow(beforeShowCallback.bind(this), utils);
 		}
 		else {
-			afterHideCallback.call(this);
+			beforeShowCallback.call(this);
 		}
 	}
 
@@ -309,6 +315,9 @@ export class IntroGuide {
 				this._infoBox._tag.focus();
 			},
 			(e) => {
+				// if (this._stepIndex > this._config.steps.length - 1) {
+				// 	return this.stop();	
+				// }
 				this.goToStep( this._stepIndex + 1 );
 				this._infoBox._tag.focus();
 			},
