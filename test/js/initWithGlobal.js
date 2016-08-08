@@ -6,7 +6,8 @@ var introConfig = {
 			title: "Welcome!",
 			description: 'Press the button below or use your left/right keys to navigate',
 			selector: null,
-			btnRightLabel: "Get started"						// Custom label for this step
+			btnRightLabel: "Get started"			// Custom label for this step
+			// , btnLeftIcon: "fa fa-close"			// If btnLeftLabel or btnLeftIcon is set for the first step it will stop the intro on click. Otherwise the left button is hidden.
 
 		},
 		{

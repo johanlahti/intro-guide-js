@@ -87,15 +87,18 @@
       -ms-user-select: none;
           user-select: none;
   padding: 0.3em 0.7em;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
   border: 1px solid transparent;
 }
 .ig-nav-btn:nth-child(2) {
   border-left-color: #fff;
   margin-left: -1px;
 }
+.ig-nav-btn-group:hover .ig-nav-btn:nth-child(2) {
+  border-left-color: transparent;
+}
 .ig-nav-btn:hover {
-  border-color: #fff;
+  background-color: rgba(200,200,200,0.3);
   box-shadow: -1px -1px 12px rgba(200,200,200,0.5);
 }
 .ig-invisible {
