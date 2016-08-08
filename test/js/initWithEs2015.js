@@ -1,5 +1,6 @@
 
-import { introGuide } from "../../dist/js/bundle"
+import { introGuide } from "../../dist/js/bundle"	// <- Import style for this example only (using local build)
+// import { introGuide } from "intro-guide-js"		// <- If you install this package through npm, write the package name like this instead
 
 var introConfig = {
 	stepIndex: 0, // starting step index (optional)
@@ -8,6 +9,7 @@ var introConfig = {
 			title: "Welcome!",
 			description: 'Press the button below or use your left/right keys to navigate',
 			selector: null,
+			btnLeftLabel: "Stop",								// Custom label for this step
 			btnRightLabel: "Get started"						// Custom label for this step
 
 		},

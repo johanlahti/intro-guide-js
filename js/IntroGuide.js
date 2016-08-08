@@ -193,14 +193,15 @@ export class IntroGuide {
 		this._scrollOffsetY = 0;
 		// this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 
+		const hasCancelButtonAtFirstItem = !!this._getStepConfig(0).btnLeftLabel;
 		switch (step) {
 			case 0:
-				if ( !this._getStepConfig(step).btnLeftLabel ) {
+				if ( !hasCancelButtonAtFirstItem ) {
 					navBtnLeft.style.display = "none";
 				}
 				break;
 			case -1:
-				return this.goToStep(step+1);
+				return hasCancelButtonAtFirstItem === true ? this.stop() : this.goToStep(0);
 			case this._config.steps.length:
 				return this.stop();
 				// return this.goToStep(step-1);

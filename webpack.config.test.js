@@ -1,3 +1,5 @@
+// This file only builds the init script used for testing and as a public example
+
 const webpack = require('webpack');
 
 module.exports = {

@@ -48,12 +48,16 @@
 
 	var _bundle = __webpack_require__(1);
 
+	// <- Import style for this example only (using local build)
+	// import { introGuide } from "intro-guide-js"		// <- If you install this package through npm, write the package name like this instead
+
 	var introConfig = {
 		stepIndex: 0, // starting step index (optional)
 		steps: [{
 			title: "Welcome!",
 			description: 'Press the button below or use your left/right keys to navigate',
 			selector: null,
+			btnLeftLabel: "Stop", // Custom label for this step
 			btnRightLabel: "Get started" // Custom label for this step
 
 		}, {
@@ -445,14 +449,15 @@
 					this._scrollOffsetY = 0;
 					// this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 
+					var hasCancelButtonAtFirstItem = !!this._getStepConfig(0).btnLeftLabel;
 					switch (step) {
 						case 0:
-							if (!this._getStepConfig(step).btnLeftLabel) {
+							if (!hasCancelButtonAtFirstItem) {
 								navBtnLeft.style.display = "none";
 							}
 							break;
 						case -1:
-							return this.goToStep(step + 1);
+							return hasCancelButtonAtFirstItem === true ? this.stop() : this.goToStep(0);
 						case this._config.steps.length:
 							return this.stop();
 						// return this.goToStep(step-1);
