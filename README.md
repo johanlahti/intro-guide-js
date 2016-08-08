@@ -1,5 +1,7 @@
 # intro-guide-js
-A JS library for creating a beautiful step-by-step introduction to your web application's functionality. Nothing more, nothing less.
+A JS library for creating a beautiful step-by-step introduction to your web application's functionality.
+
+[Here is a demo](http://kartor.malmo.se/rest/intro-guide-js/test/html5up-strata/index_es2015.html) using ES2015 import syntax.
 
 ## Dependencies
 No jQuery, only PopperJS and FontAwesome. For latest update, check `dependencies` in [package.json](https://github.com/johanlahti/intro-guide-js/blob/master/package.json)
