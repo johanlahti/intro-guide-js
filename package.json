@@ -12,8 +12,14 @@
     "dist/fonts/*",
     "README.md"
   ],
+  "config": {
+    "stylus": "./node_modules/.bin/stylus"
+  },
   "scripts": {
-    "test": "npm test"
+    "test": "echo 'No test'",
+    "build:js": "webpack --colors --progress",
+    "build:css": "stylus ./styles/*.styl -o ./styles/ && cp styles/app.css dist/css/bundle.css",
+    "build": "npm run build:css && npm run build:js && echo 'Done!'"
   },
   "repository": {
     "type": "git",
@@ -54,6 +60,7 @@
     "jshint": "latest",
     "jshint-stylish": "latest",
     "run-sequence": "^1.2.1",
+    "stylus": "^0.54.5",
     "vinyl-source-stream": "latest",
     "webpack": "^1.13.1"
   },

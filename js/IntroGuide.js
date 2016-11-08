@@ -170,9 +170,13 @@ export class IntroGuide {
 		if (this._beforeShowTimeout) {
 			clearTimeout(this._beforeShowTimeout);
 		}
+		
+		
+		// document.querySelector(".ig-infobox-section").click();
 
+		// this._nav._tag.style.visibility = "hidden";
+		// this._nav._tag.style.display = "none";
 		utils.removeClass(this._nav._tag, "ig-fadein-nav");
-		this._nav._tag.style.visibility = "hidden";
 		var navBtnLeft = this._nav._tag.querySelectorAll(".ig-nav-btn")[0],
 			navBtnRight = this._nav._tag.querySelectorAll(".ig-nav-btn")[1];
 
@@ -235,10 +239,10 @@ export class IntroGuide {
 				this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 				this._nav.updateGui(step, stepConfig);
 
-				var positionObj = this._infoBox.updateGui(stepConfig.title, stepConfig.description, stepConfig.selector, "static"); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
+				var positionObj = this._infoBox.updateGui(stepConfig.title, stepConfig.description, stepConfig.selector, stepConfig.options); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
 				var position = positionObj && positionObj.reference ? positionObj.reference : null;
 				if (position && position.top) {
-					const marginY = 100;	// TODO: Move to options?
+					const marginY = 200;	// TODO: Move to options?
 					const marginX = 0;		// TODO: Move to options?
 					const isOutsideViewportY = window.innerHeight - position.top + window.pageYOffset - marginY < 0;
 					const isOutsideViewportX = window.innerWidth - position.left + window.pageXOffset - marginX < 0;
@@ -266,9 +270,12 @@ export class IntroGuide {
 
 				this._drawHole( position  );
 				this._navDelayTimeout = setTimeout(() => {
-					this._nav._tag.style.visibility = "visible";
 					// utils.removeClass(this._nav._tag, "ig-hide");
-					utils.addClass(this._nav._tag, "ig-fadein-nav");
+					// this._nav._tag.style.display = "block";
+					// this._nav._tag.style.visibility = "visible";
+					setTimeout(() => {
+						utils.addClass(this._nav._tag, "ig-fadein-nav");
+					}, 10);
 				}, 500);
 				return null;
 			}
@@ -313,14 +320,16 @@ export class IntroGuide {
 		this._nav = new Navigation(this._infoBox._tag,
 			(e) => {
 				this.goToStep( this._stepIndex - 1 );
-				this._infoBox._tag.focus();
+				// this._infoBox._tag.focus();
+				e.stopPropagation();
 			},
 			(e) => {
 				// if (this._stepIndex > this._config.steps.length - 1) {
 				// 	return this.stop();	
 				// }
 				this.goToStep( this._stepIndex + 1 );
-				this._infoBox._tag.focus();
+				// this._infoBox._tag.focus();
+				e.stopPropagation();
 			},
 			this._config.steps.length
 		)

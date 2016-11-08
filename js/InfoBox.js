@@ -13,10 +13,10 @@ export class InfoBox {
 		if (selector) {
 			let referenceTag = document.querySelector( selector );
 			var options = Object.assign({
-					gpuAcceleration: false
+					gpuAcceleration: false,
+					placement: "bottom",
+					flipBehavior: ["right", "bottom", "top"]
 					// offset: 60,
-					// placement: "right"
-					// flipBehavior: ["right", "top"],
 					// boundariesPadding: 100,
 					// boundariesElement: document.querySelector("body"),
 			}, popperOptions);

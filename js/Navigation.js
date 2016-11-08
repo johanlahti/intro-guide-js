@@ -40,11 +40,13 @@ export class Navigation {
 			btnPrev = this._btnPrev;
 
 		const orgDisplay = "inline-block";
+		removeClass(btnNext, "btnnext-alone");
 		switch (step) {
 			case 0:
 				// Hide btnPrev on first step, unless...
 				if ( !config.btnLeftLabel && !config.btnLeftIcon) {
 					btnPrev.style.display = "none";
+					addClass(btnNext, "btnnext-alone");
 				}
 				break;
 			case this._nbrOfSteps - 1:

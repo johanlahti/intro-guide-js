@@ -73,6 +73,10 @@ var introConfig = {
 			title: "Scrolling down",
 			description: "We had to scroll down to reach here",
 			selector: "article:nth-child(5)"
+			// options: {
+			// 	placement: "bottom",
+			// 	flipBehavior: ["top", "right"]
+			// }
 		},
 		{
 			title: "Customized buttons",
