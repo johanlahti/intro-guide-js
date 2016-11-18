@@ -10,7 +10,8 @@ export function removeClass(el, className) {
 }
 
 export function tagIsVisible(el) {
-	return !!el && el.offsetParent !== null && el.style.display !== "none" && el.style.visibility !== "hidden";
+	return !(el.offsetWidth <= 0 && el.offsetHeight <= 0 || 
+		((el.style && el.style.display) || jQuery.css( el, "display" )) === "none");
 }
 
 export function getBrowser() {
@@ -25,4 +26,17 @@ export function getBrowser() {
 		ie10: ieVersion === 10,
 		ie11: ieVersion === 11
 	}
+}
+
+export function getBoundingRect(tag) {
+	if (!tag || !tag.getBoundingClientRect ) {
+		return null;
+	}
+	var _position = tag.getBoundingClientRect();		
+	// ClientRect (readonly) -> Object so we can modify its values
+	var position = {};
+	for (var k in _position) {
+		position[k] = _position[k];
+	}
+	return position;
 }

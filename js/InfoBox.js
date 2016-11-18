@@ -28,22 +28,22 @@ export class InfoBox {
 				);
 			}
 			else {
-				Object.assign(this._popper._options, options);
-				this._popper._reference = referenceTag;
+				Object.assign(this._popper.options, options);
+				this._popper.reference = referenceTag;
 				this._popper.update();
 			}
-			return this._popper._getOffsets(this._popper._popper, this._popper._reference, this._popper._options.placement);
+		}
+		else {
+			const centerTag = document.querySelector("#maindiv");
+			const clientHeight = this._tag.clientHeight || 0,
+				clientWidth = this._tag.clientWidth || 0,
+				innerWidth = window.innerWidth || document.documentElement.clientWidth || 0,
+				innerHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+			// console.log(`${clientHeight} ${clientWidth} ${innerWidth} ${innerHeight}`);
+			this._tag.style.left = (innerWidth / 2 - clientWidth / 2) + "px";
+			this._tag.style.top = (innerHeight / 2 - clientHeight / 2) + "px";
 		}
 
-		const centerTag = document.querySelector("#maindiv");
-		const clientHeight = this._tag.clientHeight || 0,
-			clientWidth = this._tag.clientWidth || 0,
-			innerWidth = window.innerWidth || document.documentElement.clientWidth || 0,
-			innerHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-		// console.log(`${clientHeight} ${clientWidth} ${innerWidth} ${innerHeight}`);
-		this._tag.style.left = (innerWidth / 2 - clientWidth / 2) + "px";
-		this._tag.style.top = (innerHeight / 2 - clientHeight / 2) + "px";
-		return null;
 
 	}
 
@@ -61,7 +61,7 @@ export class InfoBox {
 		}
 		section.appendChild( document.createTextNode(description) );
 
-		return this._updatePosition( selector, popperOptions );
+		this._updatePosition( selector, popperOptions );
 
 	}
 

@@ -239,8 +239,8 @@ export class IntroGuide {
 				this.scrollTo(this._scrollOffsetX, this._scrollOffsetY);
 				this._nav.updateGui(step, stepConfig);
 
-				var positionObj = this._infoBox.updateGui(stepConfig.title, stepConfig.description, stepConfig.selector, stepConfig.options); //this._infoBox._tag.style.position); //stepConfig.popperOptions);
-				var position = positionObj && positionObj.reference ? positionObj.reference : null;
+				this._infoBox.updateGui(stepConfig.title, stepConfig.description, stepConfig.selector, stepConfig.options);
+				var position = utils.getBoundingRect( document.querySelector(stepConfig.selector) );
 				if (position && position.top) {
 					const marginY = 200;	// TODO: Move to options?
 					const marginX = 0;		// TODO: Move to options?
@@ -396,10 +396,10 @@ export class IntroGuide {
 			// 	box.push( pos.top + $el.height() + marginTop + padding - marginRight);
 			// }
 
-			var left = box[0],
-				top = box[1],
-				right = box[2],
-				bottom = box[3];
+			var left = parseInt( box[0] ),
+				top = parseInt( box[1] ),
+				right = parseInt( box[2] ),
+				bottom = parseInt( box[3] );
 		}
 		
 		c.width = winWidth;

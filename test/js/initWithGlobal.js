@@ -21,6 +21,11 @@ var introConfig = {
 			selector: ".image.avatar"
 		},
 		{
+			title: "Element with fixed position",
+			description: 'Works with fixed positioned elements',
+			selector: "button.button-fixed"
+		},
+		{
 			title: "No selector?",
 			description: 'The text will be centered',
 			selector: null
